@@ -1,0 +1,13 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="64dp"
+    android:height="64dp"
+    android:viewportWidth="64"
+    android:viewportHeight="64">
+    <path
+        android:fillColor="#E5E1D8"
+        android:pathData="M0,0h64v64h-64z"/>
+    <!-- Jacket / Collar / Suit icon representation -->
+    <path
+        android:fillColor="#111111"
+        android:pathData="M32,12 C25.37,12 20,17.37 20,24 C20,28.5 22.47,32.42 26.15,34.45 L18,48 H25 L32,36.3 L39,48 H46 L37.85,34.45 C41.53,32.42 44,28.5 44,24 C44,17.37 38.63,12 32,12 Z M32,16 C36.42,16 40,19.58 40,24 C40,28.42 36.42,32 32,32 C27.58,32 24,28.42 24,24 C24,19.58 27.58,16 32,16 Z"/>
+</vector>

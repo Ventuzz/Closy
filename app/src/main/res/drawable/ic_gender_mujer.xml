@@ -1,0 +1,13 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="64dp"
+    android:height="64dp"
+    android:viewportWidth="64"
+    android:viewportHeight="64">
+    <path
+        android:fillColor="#E5E1D8"
+        android:pathData="M0,0h64v64h-64z"/>
+    <!-- Dress / Elegance icon representation -->
+    <path
+        android:fillColor="#111111"
+        android:pathData="M32,12 C26.48,12 22,16.48 22,22 C22,26.03 24.39,29.5 27.84,31.08 L22,48 H42 L36.16,31.08 C39.61,29.5 42,26.03 42,22 C42,16.48 37.52,12 32,12 Z M32,16 C35.31,16 38,18.69 38,22 C38,25.31 35.31,28 32,28 C28.69,28 26,25.31 26,22 C26,18.69 28.69,16 32,16 Z"/>
+</vector>

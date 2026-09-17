@@ -1,0 +1,13 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="64dp"
+    android:height="64dp"
+    android:viewportWidth="64"
+    android:viewportHeight="64">
+    <path
+        android:fillColor="#E5E1D8"
+        android:pathData="M0,0h64v64h-64z"/>
+    <!-- Neutral Hanger / Apparel representation -->
+    <path
+        android:fillColor="#111111"
+        android:pathData="M32,14 C28.69,14 26,16.69 26,20 C26,22.21 27.2,24.13 29,25.17 V28 L18,35 C16.34,36.03 15.34,37.85 15.34,39.81 V42 H48.66 V39.81 C48.66,37.85 47.66,36.03 46,35 L35,28 V25.17 C36.8,24.13 38,22.21 38,20 C38,16.69 35.31,14 32,14 Z M32,17.5 C33.38,17.5 34.5,18.62 34.5,20 C34.5,21.38 33.38,22.5 32,22.5 C30.62,22.5 29.5,21.38 29.5,20 C29.5,18.62 30.62,17.5 32,17.5 Z M21,39 L32,32.2 L43,39 H21 Z"/>
+</vector>
