@@ -16,8 +16,46 @@ class AuthViewModel(
     private val _uiState = MutableStateFlow(AuthState())
     val uiState: StateFlow<AuthState> = _uiState.asStateFlow()
 
+    private var pendingAuthSuccessCallback: ((hasSavedPreference: Boolean) -> Unit)? = null
+
+    fun clearForm() {
+        _uiState.update {
+            it.copy(
+                email = "",
+                password = "",
+                name = "",
+                confirmPassword = "",
+                errorMessage = null
+            )
+        }
+    }
+
+    fun dismissSuccessMessage(onAuthSuccess: ((hasSavedPreference: Boolean) -> Unit)? = null) {
+        val hasPref = hasSavedGenderPreference()
+        _uiState.update { it.copy(successMessage = null) }
+        val callback = onAuthSuccess ?: pendingAuthSuccessCallback
+        callback?.invoke(hasPref)
+        pendingAuthSuccessCallback = null
+    }
+
+    fun logout() {
+        repository.logout()
+        clearForm()
+        _uiState.update {
+            it.copy(
+                selectedTab = 0,
+                isAuthenticated = false
+            )
+        }
+    }
+
+    fun hasSavedGenderPreference(): Boolean {
+        return repository.hasSavedGenderPreference()
+    }
+
     fun onTabSelected(index: Int) {
-        _uiState.update { it.copy(selectedTab = index, errorMessage = null) }
+        clearForm()
+        _uiState.update { it.copy(selectedTab = index) }
     }
 
     fun onNameChanged(name: String) {
@@ -45,6 +83,10 @@ class AuthViewModel(
     }
 
     fun onSubmit(onAuthSuccess: () -> Unit) {
+        onSubmitWithPreference { _ -> onAuthSuccess() }
+    }
+
+    fun onSubmitWithPreference(onAuthSuccess: (hasSavedPreference: Boolean) -> Unit) {
         val currentState = _uiState.value
 
         if (currentState.selectedTab == 0) {
@@ -91,16 +133,28 @@ class AuthViewModel(
 
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-            val result = if (currentState.selectedTab == 0) {
-                repository.login(currentState.email, currentState.password)
-            } else {
+            val isSignUp = currentState.selectedTab == 1
+            val result = if (isSignUp) {
                 repository.signUp(currentState.name, currentState.email, currentState.password)
+            } else {
+                repository.login(currentState.email, currentState.password)
             }
 
             result.fold(
                 onSuccess = {
-                    _uiState.update { state -> state.copy(isLoading = false, isAuthenticated = true) }
-                    onAuthSuccess()
+                    pendingAuthSuccessCallback = onAuthSuccess
+                    val msg = if (isSignUp) {
+                        "Bienvenido ${currentState.name.trim()}, gracias por usar Closy"
+                    } else {
+                        "Inicio de sesión exitoso"
+                    }
+                    _uiState.update { state ->
+                        state.copy(
+                            isLoading = false,
+                            isAuthenticated = true,
+                            successMessage = msg
+                        )
+                    }
                 },
                 onFailure = { error ->
                     _uiState.update { state ->
@@ -115,13 +169,23 @@ class AuthViewModel(
     }
 
     fun onGoogleSignIn(onAuthSuccess: () -> Unit) {
+        onGoogleSignInWithPreference { _ -> onAuthSuccess() }
+    }
+
+    fun onGoogleSignInWithPreference(onAuthSuccess: (hasSavedPreference: Boolean) -> Unit) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             val result = repository.loginWithGoogle()
             result.fold(
                 onSuccess = {
-                    _uiState.update { state -> state.copy(isLoading = false, isAuthenticated = true) }
-                    onAuthSuccess()
+                    pendingAuthSuccessCallback = onAuthSuccess
+                    _uiState.update { state ->
+                        state.copy(
+                            isLoading = false,
+                            isAuthenticated = true,
+                            successMessage = "Inicio de sesión exitoso"
+                        )
+                    }
                 },
                 onFailure = { error ->
                     _uiState.update { state ->
@@ -136,13 +200,23 @@ class AuthViewModel(
     }
 
     fun onGuestLogin(onAuthSuccess: () -> Unit) {
+        onGuestLoginWithPreference { _ -> onAuthSuccess() }
+    }
+
+    fun onGuestLoginWithPreference(onAuthSuccess: (hasSavedPreference: Boolean) -> Unit) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             val result = repository.loginAsGuest()
             result.fold(
                 onSuccess = {
-                    _uiState.update { state -> state.copy(isLoading = false, isAuthenticated = true) }
-                    onAuthSuccess()
+                    pendingAuthSuccessCallback = onAuthSuccess
+                    _uiState.update { state ->
+                        state.copy(
+                            isLoading = false,
+                            isAuthenticated = true,
+                            successMessage = "Inicio de sesión exitoso"
+                        )
+                    }
                 },
                 onFailure = { error ->
                     _uiState.update { state ->

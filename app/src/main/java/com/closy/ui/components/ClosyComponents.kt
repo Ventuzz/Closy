@@ -1,10 +1,16 @@
 package com.closy.ui.components
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
@@ -25,6 +31,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -34,11 +41,13 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.closy.ui.theme.PillShape
 import com.closy.ui.theme.SegmentedTabShape
 import com.closy.ui.theme.TextFieldShape
+import kotlinx.coroutines.delay
 
 /**
  * Segmented Tab Control matching visual mockups.
@@ -183,5 +192,59 @@ fun ClosyPrimaryButton(
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold
         )
+    }
+}
+
+/**
+ * Top floating oval notification banner.
+ * Oval pill shape (`CircleShape`), dark surface (`#111111`), white text, elevation,
+ * floating near top status bar with slide/fade animation and auto-dismiss after 2 seconds.
+ */
+@Composable
+fun TopFloatingNotification(
+    message: String?,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier,
+    durationMillis: Long = 2000L
+) {
+    LaunchedEffect(message) {
+        if (message != null) {
+            delay(durationMillis)
+            onDismiss()
+        }
+    }
+
+    AnimatedVisibility(
+        visible = message != null,
+        enter = slideInVertically(initialOffsetY = { -it }) + fadeIn(),
+        exit = slideOutVertically(targetOffsetY = { -it }) + fadeOut(),
+        modifier = modifier
+    ) {
+        if (message != null) {
+            Surface(
+                modifier = Modifier
+                    .padding(horizontal = 24.dp, vertical = 8.dp)
+                    .shadow(8.dp, CircleShape)
+                    .clip(CircleShape),
+                color = Color(0xFF111111),
+                contentColor = Color.White,
+                shape = CircleShape
+            ) {
+                Row(
+                    modifier = Modifier
+                        .padding(horizontal = 20.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = message,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color.White,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+        }
     }
 }

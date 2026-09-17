@@ -30,6 +30,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,9 +47,14 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.closy.R
 import com.closy.ui.theme.ClosyTheme
 
+import androidx.compose.ui.platform.LocalContext
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
+
 data class GenderOption(
     val title: String,
     val subtitle: String,
+    val imageUrl: String,
     val iconResId: Int
 )
 
@@ -59,6 +65,10 @@ fun PersonalizationScreen(
     viewModel: PersonalizationViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        viewModel.loadSavedPreference()
+    }
 
     PersonalizationContent(
         uiState = uiState,
@@ -79,16 +89,19 @@ fun PersonalizationContent(
         GenderOption(
             title = "Hombre",
             subtitle = "Ideas y estilos para hombres",
+            imageUrl = "https://images.unsplash.com/photo-1617137984095-74e4e5e3613f?w=300",
             iconResId = R.drawable.ic_gender_hombre
         ),
         GenderOption(
             title = "Mujer",
             subtitle = "Ideas y estilos para mujeres",
+            imageUrl = "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=300",
             iconResId = R.drawable.ic_gender_mujer
         ),
         GenderOption(
             title = "Sin género",
             subtitle = "Estilos neutros y combinables",
+            imageUrl = "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=300",
             iconResId = R.drawable.ic_gender_singenero
         )
     )
@@ -256,17 +269,31 @@ fun GenderCardOption(
             // Image thumbnail on left
             Box(
                 modifier = Modifier
-                    .size(60.dp)
+                    .size(64.dp)
                     .clip(RoundedCornerShape(14.dp))
                     .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center
             ) {
-                Image(
-                    painter = painterResource(id = option.iconResId),
-                    contentDescription = option.title,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
+                if (option.imageUrl.isNotEmpty()) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(option.imageUrl)
+                            .crossfade(true)
+                            .placeholder(option.iconResId)
+                            .error(option.iconResId)
+                            .build(),
+                        contentDescription = option.title,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Image(
+                        painter = painterResource(id = option.iconResId),
+                        contentDescription = option.title,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.width(16.dp))

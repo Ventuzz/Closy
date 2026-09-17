@@ -16,6 +16,30 @@ class PersonalizationViewModel(
     private val _uiState = MutableStateFlow(PersonalizationState())
     val uiState: StateFlow<PersonalizationState> = _uiState.asStateFlow()
 
+    init {
+        loadSavedPreference()
+    }
+
+    fun loadSavedPreference() {
+        val savedGender = repository.currentUser.value?.preferences?.genderPreference
+        if (!savedGender.isNullOrBlank()) {
+            _uiState.update { it.copy(selectedGender = savedGender) }
+        } else {
+            _uiState.update { it.copy(selectedGender = null) }
+        }
+    }
+
+    fun resetGenderSelection() {
+        _uiState.update {
+            it.copy(
+                selectedGender = null,
+                isLoading = false,
+                isSaved = false,
+                errorMessage = null
+            )
+        }
+    }
+
     fun selectGender(gender: String, onComplete: () -> Unit) {
         viewModelScope.launch {
             _uiState.update { it.copy(selectedGender = gender, isLoading = true, errorMessage = null) }

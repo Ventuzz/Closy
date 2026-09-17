@@ -66,6 +66,10 @@ class HomeViewModel(
         _uiState.update { it.copy(selectedBottomTab = index) }
     }
 
+    fun resetBottomTab() {
+        _uiState.update { it.copy(selectedBottomTab = 0) }
+    }
+
     fun toggleFavorite(outfitId: String) {
         outfitRepository.toggleFavorite(outfitId)
         // Check if selected detail outfit was toggled

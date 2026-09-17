@@ -29,6 +29,7 @@ class HomeViewModelTest {
         Dispatchers.setMain(testDispatcher)
         outfitRepository = OutfitRepository()
         authRepository = AuthRepository()
+        authRepository.logout()
         viewModel = HomeViewModel(outfitRepository, authRepository)
     }
 
@@ -90,10 +91,7 @@ class HomeViewModelTest {
         assertEquals("Hombre", state.activeGenderPreference)
         assertTrue(state.outfits.isNotEmpty())
         state.outfits.forEach { outfit ->
-            assertTrue(
-                outfit.genderPreference.equals("Hombre", ignoreCase = true) ||
-                        outfit.genderPreference.equals("Sin género", ignoreCase = true)
-            )
+            assertEquals("Hombre", outfit.genderPreference)
         }
     }
 
@@ -119,7 +117,7 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun testBottomTabSelection() = runTest {
+    fun testBottomTabSelectionAndReset() = runTest {
         testDispatcher.scheduler.advanceUntilIdle()
 
         viewModel.onBottomTabSelected(1) // Closet
@@ -130,6 +128,9 @@ class HomeViewModelTest {
 
         viewModel.onBottomTabSelected(3) // Perfil
         assertEquals(3, viewModel.uiState.value.selectedBottomTab)
+
+        viewModel.resetBottomTab() // Reset to Inicio
+        assertEquals(0, viewModel.uiState.value.selectedBottomTab)
 
         viewModel.onBottomTabSelected(0) // Inicio
         assertEquals(0, viewModel.uiState.value.selectedBottomTab)

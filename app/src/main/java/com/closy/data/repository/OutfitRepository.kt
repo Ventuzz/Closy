@@ -1,19 +1,87 @@
 package com.closy.data.repository
 
+import com.closy.data.db.InMemorySavedOutfitDao
+import com.closy.data.db.SavedOutfitDao
+import com.closy.data.db.SavedOutfitEntity
 import com.closy.data.model.GarmentItem
 import com.closy.data.model.Outfit
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 
-class OutfitRepository {
+class OutfitRepository(
+    savedOutfitDao: SavedOutfitDao? = null
+) {
+    private val activeSavedOutfitDao: SavedOutfitDao = savedOutfitDao?.also {
+        globalSavedOutfitDao = it
+    } ?: globalSavedOutfitDao ?: InMemorySavedOutfitDao().also {
+        globalSavedOutfitDao = it
+    }
 
-    private val _favoriteOutfitIds = MutableStateFlow<Set<String>>(setOf("outfit_1", "outfit_4"))
+    private val _favoriteOutfitIds = MutableStateFlow<Set<String>>(emptySet())
     val favoriteOutfitIds: StateFlow<Set<String>> = _favoriteOutfitIds.asStateFlow()
 
+    init {
+        loadSavedOutfitsForUser(getActiveUserEmail())
+    }
+
+    fun getActiveUserEmail(): String {
+        return AuthRepository.currentUserEmail ?: "invitado@closy.app"
+    }
+
+    fun loadSavedOutfitsForUser(userEmail: String = getActiveUserEmail()): Set<String> {
+        val ids = runBlocking {
+            withContext(Dispatchers.IO) {
+                activeSavedOutfitDao.getSavedOutfitIdsForUser(userEmail)
+            }
+        }.toSet()
+        _favoriteOutfitIds.value = ids
+        return ids
+    }
+
+    suspend fun isOutfitSaved(userEmail: String = getActiveUserEmail(), outfitId: String): Boolean {
+        return withContext(Dispatchers.IO) {
+            activeSavedOutfitDao.isOutfitSaved(userEmail, outfitId)
+        }
+    }
+
+    suspend fun saveOutfit(userEmail: String = getActiveUserEmail(), outfitId: String) {
+        withContext(Dispatchers.IO) {
+            activeSavedOutfitDao.saveOutfit(
+                SavedOutfitEntity(userEmail = userEmail, outfitId = outfitId)
+            )
+        }
+        loadSavedOutfitsForUser(userEmail)
+    }
+
+    suspend fun removeSavedOutfit(userEmail: String = getActiveUserEmail(), outfitId: String) {
+        withContext(Dispatchers.IO) {
+            activeSavedOutfitDao.removeSavedOutfit(userEmail, outfitId)
+        }
+        loadSavedOutfitsForUser(userEmail)
+    }
+
+    fun toggleFavorite(outfitId: String, userEmail: String = getActiveUserEmail()) {
+        runBlocking {
+            withContext(Dispatchers.IO) {
+                val isCurrentlySaved = activeSavedOutfitDao.isOutfitSaved(userEmail, outfitId)
+                if (isCurrentlySaved) {
+                    activeSavedOutfitDao.removeSavedOutfit(userEmail, outfitId)
+                } else {
+                    activeSavedOutfitDao.saveOutfit(
+                        SavedOutfitEntity(userEmail = userEmail, outfitId = outfitId)
+                    )
+                }
+            }
+        }
+        loadSavedOutfitsForUser(userEmail)
+    }
+
     private val sampleOutfits = listOf(
-        // Mujer
+        // --- MUJER ---
         Outfit(
             id = "outfit_1",
             title = "Oversize Blazer & Wide Leg",
@@ -141,10 +209,34 @@ class OutfitRepository {
             garmentSummary = "Saco Estructurado Marfil · Pantalón Vestir Recto · Stilettos",
             hashtags = listOf("#formal", "#ejecutivo", "#monocromo")
         ),
-
-        // Hombre
         Outfit(
             id = "outfit_6",
+            title = "Conjunto Chic de Punto & Falda",
+            styleCategory = "Casual",
+            genderPreference = "Mujer",
+            imageUrl = "https://images.unsplash.com/photo-1581044777550-4cfa60707c03?w=600",
+            tags = listOf("Knitwear", "CasualChic", "Otoño"),
+            itemsCount = 3,
+            garments = listOf(
+                GarmentItem("Suéter Tejido Camel", "Camisa/Blusa", "Zara"),
+                GarmentItem("Falda Midi de Satén", "Pantalón/Falda", "Stradivarius"),
+                GarmentItem("Botines de Piel Marrón", "Calzado", "Mango")
+            ),
+            pinterestUrl = "https://pinterest.com/pin/106",
+            aspectRatio = 1.4f,
+            pinterestHandle = "@streetstyle_paris",
+            garmentThumbnails = listOf(
+                "https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=150",
+                "https://images.unsplash.com/photo-1583496661160-fb5886a0aaaa?w=150",
+                "https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=150"
+            ),
+            garmentSummary = "Suéter Tejido Camel · Falda Satén · Botines de Piel",
+            hashtags = listOf("#knitwear", "#casualchic", "#autumn")
+        ),
+
+        // --- HOMBRE ---
+        Outfit(
+            id = "outfit_7",
             title = "Casual Chic con Sobrecamisa",
             styleCategory = "Casual",
             genderPreference = "Hombre",
@@ -157,7 +249,8 @@ class OutfitRepository {
                 GarmentItem("Pantalón Chino Beige", "Pantalón/Falda", "Dockers"),
                 GarmentItem("Zapatillas Bajas Blancas", "Calzado", "Adidas")
             ),
-            pinterestUrl = "https://pinterest.com/pin/106",
+            isSaved = true,
+            pinterestUrl = "https://pinterest.com/pin/107",
             aspectRatio = 1.4f,
             pinterestHandle = "@mrporter",
             garmentThumbnails = listOf(
@@ -169,7 +262,7 @@ class OutfitRepository {
             hashtags = listOf("#casual", "#layering", "#otoño")
         ),
         Outfit(
-            id = "outfit_7",
+            id = "outfit_8",
             title = "Urbano Hoodie & Cargo",
             styleCategory = "Urbano",
             genderPreference = "Hombre",
@@ -182,7 +275,7 @@ class OutfitRepository {
                 GarmentItem("Sneakers Altas", "Calzado", "Nike Air Jordan"),
                 GarmentItem("Mochila Táctica Negra", "Accesorios", "Herschel")
             ),
-            pinterestUrl = "https://pinterest.com/pin/107",
+            pinterestUrl = "https://pinterest.com/pin/108",
             aspectRatio = 1.25f,
             pinterestHandle = "@hypebeast",
             garmentThumbnails = listOf(
@@ -194,7 +287,7 @@ class OutfitRepository {
             hashtags = listOf("#streetwear", "#hoodie", "#urbano")
         ),
         Outfit(
-            id = "outfit_8",
+            id = "outfit_9",
             title = "Traje Azul Marino Slim Fit",
             styleCategory = "Formal",
             genderPreference = "Hombre",
@@ -207,7 +300,7 @@ class OutfitRepository {
                 GarmentItem("Zapatos Oxford Cuero Café", "Calzado", "Lottusse"),
                 GarmentItem("Corbata Seda Azul Oscuro", "Accesorios", "Massimo Dutti")
             ),
-            pinterestUrl = "https://pinterest.com/pin/108",
+            pinterestUrl = "https://pinterest.com/pin/109",
             aspectRatio = 1.55f,
             pinterestHandle = "@gq",
             garmentThumbnails = listOf(
@@ -219,7 +312,7 @@ class OutfitRepository {
             hashtags = listOf("#formal", "#slimfit", "#sartorial")
         ),
         Outfit(
-            id = "outfit_9",
+            id = "outfit_10",
             title = "Verano Polo & Short Lino",
             styleCategory = "Verano",
             genderPreference = "Hombre",
@@ -232,7 +325,7 @@ class OutfitRepository {
                 GarmentItem("Alpargatas de Lona", "Calzado", "TOMs"),
                 GarmentItem("Gafas de Sol Wayfarer", "Accesorios", "Ray-Ban")
             ),
-            pinterestUrl = "https://pinterest.com/pin/109",
+            pinterestUrl = "https://pinterest.com/pin/110",
             aspectRatio = 1.3f,
             pinterestHandle = "@mensfashionpost",
             garmentThumbnails = listOf(
@@ -243,10 +336,59 @@ class OutfitRepository {
             garmentSummary = "Polo Azul Claro · Short Lino Arena · Alpargatas Lona",
             hashtags = listOf("#verano", "#polo", "#lino")
         ),
-
-        // Sin género
         Outfit(
-            id = "outfit_10",
+            id = "outfit_11",
+            title = "Chaqueta de Cuero & Denim Raw",
+            styleCategory = "Urbano",
+            genderPreference = "Hombre",
+            imageUrl = "https://images.unsplash.com/photo-1516257984-b1b4d707412e?w=600",
+            tags = listOf("Leather", "Denim", "Rock"),
+            itemsCount = 3,
+            garments = listOf(
+                GarmentItem("Chaqueta Biker de Cuero Negro", "Camisa/Blusa", "AllSaints"),
+                GarmentItem("Jeans Denim Selvedge", "Pantalón/Falda", "Levi's"),
+                GarmentItem("Botas Chelsea de Cuero", "Calzado", "Red Wing")
+            ),
+            pinterestUrl = "https://pinterest.com/pin/111",
+            aspectRatio = 1.4f,
+            pinterestHandle = "@menwithstreetstyle",
+            garmentThumbnails = listOf(
+                "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=150",
+                "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=150",
+                "https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?w=150"
+            ),
+            garmentSummary = "Chaqueta Biker Cuero · Jeans Selvedge · Botas Chelsea",
+            hashtags = listOf("#leather", "#denim", "#rock")
+        ),
+        Outfit(
+            id = "outfit_12",
+            title = "Blazer Minimalista & Mocasines",
+            styleCategory = "Elegante",
+            genderPreference = "Hombre",
+            imageUrl = "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=600",
+            tags = listOf("Tailored", "SmartCasual", "Minimal"),
+            itemsCount = 4,
+            garments = listOf(
+                GarmentItem("Blazer Desestructurado Gris", "Camisa/Blusa", "Massimo Dutti"),
+                GarmentItem("Camisa Oxford Celeste", "Camisa/Blusa", "Scalpers"),
+                GarmentItem("Pantalón de Vestir Marino", "Pantalón/Falda", "Zara Man"),
+                GarmentItem("Mocasines Penny Leather", "Calzado", "Sebago")
+            ),
+            pinterestUrl = "https://pinterest.com/pin/112",
+            aspectRatio = 1.5f,
+            pinterestHandle = "@dapper_men",
+            garmentThumbnails = listOf(
+                "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=150",
+                "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=150",
+                "https://images.unsplash.com/photo-1562183241-b937e95585b6?w=150"
+            ),
+            garmentSummary = "Blazer Desestructurado Gris · Camisa Oxford · Mocasines Penny",
+            hashtags = listOf("#smartcasual", "#tailored", "#minimal")
+        ),
+
+        // --- SIN GÉNERO ---
+        Outfit(
+            id = "outfit_13",
             title = "Estilo Minimalista Neutro",
             styleCategory = "Casual",
             genderPreference = "Sin género",
@@ -259,7 +401,8 @@ class OutfitRepository {
                 GarmentItem("Zapatillas Minimalistas Blancas", "Calzado", "Veja"),
                 GarmentItem("Tote Bag de Lienzo", "Accesorios", "MUJI")
             ),
-            pinterestUrl = "https://pinterest.com/pin/110",
+            isSaved = true,
+            pinterestUrl = "https://pinterest.com/pin/113",
             aspectRatio = 1.4f,
             pinterestHandle = "@minimalism_outfits",
             garmentThumbnails = listOf(
@@ -271,7 +414,7 @@ class OutfitRepository {
             hashtags = listOf("#minimal", "#neutros", "#genderless")
         ),
         Outfit(
-            id = "outfit_11",
+            id = "outfit_14",
             title = "Urbano Monocromo Oversized",
             styleCategory = "Urbano",
             genderPreference = "Sin género",
@@ -284,7 +427,7 @@ class OutfitRepository {
                 GarmentItem("Pantalón Ancho con Pinzas", "Pantalón/Falda", "COS"),
                 GarmentItem("Botines Cuero Plataforma", "Calzado", "Dr. Martens")
             ),
-            pinterestUrl = "https://pinterest.com/pin/111",
+            pinterestUrl = "https://pinterest.com/pin/114",
             aspectRatio = 1.6f,
             pinterestHandle = "@streetwear_daily",
             garmentThumbnails = listOf(
@@ -296,7 +439,7 @@ class OutfitRepository {
             hashtags = listOf("#allblack", "#monocromo", "#oversized")
         ),
         Outfit(
-            id = "outfit_12",
+            id = "outfit_15",
             title = "Sartorial Moderno Unisex",
             styleCategory = "Elegante",
             genderPreference = "Sin género",
@@ -309,7 +452,7 @@ class OutfitRepository {
                 GarmentItem("Pantalón Formal de Caída Fluida", "Pantalón/Falda", "Mango"),
                 GarmentItem("Mocasines Destalonados", "Calzado", "Gucci")
             ),
-            pinterestUrl = "https://pinterest.com/pin/112",
+            pinterestUrl = "https://pinterest.com/pin/115",
             aspectRatio = 1.35f,
             pinterestHandle = "@cosstores",
             garmentThumbnails = listOf(
@@ -319,6 +462,54 @@ class OutfitRepository {
             ),
             garmentSummary = "Blazer Recto Doble Abotonadura · Camisa Satinada · Pantalón Fluido",
             hashtags = listOf("#tailoring", "#sartorial", "#modern")
+        ),
+        Outfit(
+            id = "outfit_16",
+            title = "Look Lino Neutro & Trench",
+            styleCategory = "Verano",
+            genderPreference = "Sin género",
+            imageUrl = "https://images.unsplash.com/photo-1434389677669-e08b4cac3105?w=600",
+            tags = listOf("Lino", "Trench", "Unisex"),
+            itemsCount = 3,
+            garments = listOf(
+                GarmentItem("Trench Coat Ligerísimo Camel", "Camisa/Blusa", "Burberry"),
+                GarmentItem("Camisa de Lino Crudo", "Camisa/Blusa", "Uniqlo U"),
+                GarmentItem("Pantalón Recto de Lino", "Pantalón/Falda", "Zara")
+            ),
+            pinterestUrl = "https://pinterest.com/pin/116",
+            aspectRatio = 1.45f,
+            pinterestHandle = "@unisex_style",
+            garmentThumbnails = listOf(
+                "https://images.unsplash.com/photo-1544441893-675973e31985?w=150",
+                "https://images.unsplash.com/photo-1598033129183-c4f50c736f10?w=150",
+                "https://images.unsplash.com/photo-1509631179647-0177331693ae?w=150"
+            ),
+            garmentSummary = "Trench Coat Camel · Camisa Lino Crudo · Pantalón Recto",
+            hashtags = listOf("#lino", "#trench", "#neutro")
+        ),
+        Outfit(
+            id = "outfit_17",
+            title = "Set Deportivo Tonal Earth",
+            styleCategory = "Urbano",
+            genderPreference = "Sin género",
+            imageUrl = "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600",
+            tags = listOf("Athleisure", "EarthTones", "Comfort"),
+            itemsCount = 3,
+            garments = listOf(
+                GarmentItem("Polerón Oversize Terracota", "Camisa/Blusa", "Fear of God Essentials"),
+                GarmentItem("Jogger Tonal Algodón", "Pantalón/Falda", "Adidas Originals"),
+                GarmentItem("Sneakers Chunky Neutras", "Calzado", "New Balance")
+            ),
+            pinterestUrl = "https://pinterest.com/pin/117",
+            aspectRatio = 1.3f,
+            pinterestHandle = "@athleisure_co",
+            garmentThumbnails = listOf(
+                "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=150",
+                "https://images.unsplash.com/photo-1509631179647-0177331693ae?w=150",
+                "https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=150"
+            ),
+            garmentSummary = "Polerón Terracota · Jogger Tonal Algodón · Sneakers Chunky",
+            hashtags = listOf("#athleisure", "#earthtones", "#comfort")
         )
     )
 
@@ -326,9 +517,10 @@ class OutfitRepository {
         genderPreference: String,
         searchQuery: String = "",
         categoryFilter: String = "Todos",
-        savedOnly: Boolean = false
+        savedOnly: Boolean = false,
+        userEmail: String = getActiveUserEmail()
     ): List<Outfit> {
-        val favorites = _favoriteOutfitIds.value
+        val favorites = loadSavedOutfitsForUser(userEmail)
 
         return sampleOutfits.filter { outfit ->
             val isSaved = favorites.contains(outfit.id)
@@ -336,11 +528,9 @@ class OutfitRepository {
                 return@filter false
             }
 
-            // Gender match: if preference matches outfit, or if outfit or preference is "Sin género"
+            // Strict gender matching: if "Todos", return all; otherwise match outfit.genderPreference strictly
             val genderMatches = genderPreference.equals("Todos", ignoreCase = true) ||
-                    outfit.genderPreference.equals(genderPreference, ignoreCase = true) ||
-                    outfit.genderPreference.equals("Sin género", ignoreCase = true) ||
-                    genderPreference.equals("Sin género", ignoreCase = true)
+                    outfit.genderPreference.equals(genderPreference, ignoreCase = true)
 
             // Category match
             val categoryMatches = categoryFilter.equals("Todos", ignoreCase = true) ||
@@ -365,13 +555,16 @@ class OutfitRepository {
         }
     }
 
-    fun toggleFavorite(outfitId: String) {
-        _favoriteOutfitIds.update { current ->
-            if (current.contains(outfitId)) {
-                current - outfitId
-            } else {
-                current + outfitId
-            }
+    companion object {
+        @Volatile
+        private var globalSavedOutfitDao: SavedOutfitDao? = null
+
+        fun init(savedOutfitDao: SavedOutfitDao) {
+            globalSavedOutfitDao = savedOutfitDao
+        }
+
+        fun resetDao() {
+            globalSavedOutfitDao = null
         }
     }
 }

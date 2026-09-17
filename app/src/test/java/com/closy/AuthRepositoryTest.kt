@@ -2,8 +2,13 @@ package com.closy
 
 import com.closy.data.db.InMemoryUserDao
 import com.closy.data.repository.AuthRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
@@ -13,12 +18,19 @@ import org.junit.Test
 @OptIn(ExperimentalCoroutinesApi::class)
 class AuthRepositoryTest {
 
+    private val testDispatcher = StandardTestDispatcher()
     private lateinit var repository: AuthRepository
 
     @Before
     fun setUp() {
+        Dispatchers.setMain(testDispatcher)
         val userDao = InMemoryUserDao()
         repository = AuthRepository(userDao)
+    }
+
+    @After
+    fun tearDown() {
+        Dispatchers.resetMain()
     }
 
     @Test

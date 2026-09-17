@@ -2,6 +2,12 @@ package com.closy.ui.home
 
 import android.content.Intent
 import androidx.core.net.toUri
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,9 +23,10 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -56,17 +63,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -99,7 +102,6 @@ import com.closy.data.model.Outfit
 import com.closy.ui.components.SegmentedTabControl
 import com.closy.ui.theme.ClosyTheme
 import com.closy.ui.theme.PillShape
-import com.closy.ui.theme.TextFieldShape
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -112,10 +114,14 @@ fun HomeScreen(
     val uiState by viewModel.uiState.collectAsState()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
+    LaunchedEffect(Unit) {
+        viewModel.resetBottomTab()
+    }
+
     Scaffold(
         modifier = modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background,
-        contentWindowInsets = WindowInsets.systemBars,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
             ClosyBottomNavigationBar(
                 selectedTab = uiState.selectedBottomTab,
@@ -127,6 +133,7 @@ fun HomeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
+                .statusBarsPadding()
         ) {
             when (uiState.selectedBottomTab) {
                 0 -> MainHomeContent(
@@ -179,7 +186,7 @@ private fun MainHomeContent(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 8.dp),
+                .padding(start = 20.dp, end = 20.dp, top = 4.dp, bottom = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -325,10 +332,10 @@ private fun MainHomeContent(
                 fontWeight = FontWeight.Bold
             ),
             color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp)
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 2.dp)
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(6.dp))
 
         // Segmented Tab Switcher: "Para Ti" vs "Guardados"
         SegmentedTabControl(
@@ -338,51 +345,7 @@ private fun MainHomeContent(
             modifier = Modifier.padding(horizontal = 20.dp)
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // Search Bar ("Buscar outfits, estilos...")
-        OutlinedTextField(
-            value = uiState.searchQuery,
-            onValueChange = viewModel::onSearchQueryChange,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp),
-            placeholder = {
-                Text(
-                    text = "Buscar outfits, estilos...",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                )
-            },
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = "Buscar",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            },
-            trailingIcon = {
-                if (uiState.searchQuery.isNotEmpty()) {
-                    IconButton(onClick = { viewModel.onSearchQueryChange("") }) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = "Limpiar búsqueda",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            },
-            shape = TextFieldShape,
-            singleLine = true,
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = Color.Transparent
-            )
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         // Category / Filter Chips Bar
         LazyRow(
@@ -413,34 +376,56 @@ private fun MainHomeContent(
             }
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
-        // Feed list of outfits (Single-column full-width card layout)
-        if (uiState.outfits.isEmpty()) {
-            EmptyStateView(
-                searchQuery = uiState.searchQuery,
-                category = uiState.selectedCategory,
-                isSavedTab = uiState.selectedSegmentTab == 1,
-                onReset = {
-                    viewModel.onSearchQueryChange("")
-                    viewModel.onCategorySelected("Todos")
-                    if (uiState.selectedSegmentTab == 1) {
-                        viewModel.onSegmentTabSelected(0)
-                    }
-                }
-            )
-        } else {
-            LazyColumn(
-                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(20.dp),
-                modifier = Modifier.fillMaxSize()
-            ) {
-                items(uiState.outfits, key = { it.id }) { outfit ->
-                    OutfitCard(
-                        outfit = outfit,
-                        onCardClick = { viewModel.selectOutfitForDetail(outfit) },
-                        onFavoriteToggle = { viewModel.toggleFavorite(outfit.id) }
+        // Feed list of outfits with AnimatedContent transition
+        AnimatedContent(
+            targetState = uiState.selectedSegmentTab,
+            transitionSpec = {
+                if (targetState > initialState) {
+                    (slideInHorizontally { width -> width } + fadeIn()).togetherWith(
+                        slideOutHorizontally { width -> -width } + fadeOut()
                     )
+                } else {
+                    (slideInHorizontally { width -> -width } + fadeIn()).togetherWith(
+                        slideOutHorizontally { width -> -width } + fadeOut()
+                    )
+                }
+            },
+            label = "TabTransition",
+            modifier = Modifier.weight(1f)
+        ) { segmentTab ->
+            val isSavedTab = segmentTab == 1
+            val outfitsForTab = if (isSavedTab) {
+                uiState.outfits.filter { it.isSaved }
+            } else {
+                uiState.outfits
+            }
+
+            if (outfitsForTab.isEmpty()) {
+                EmptyStateView(
+                    category = uiState.selectedCategory,
+                    isSavedTab = isSavedTab,
+                    onReset = {
+                        viewModel.onCategorySelected("Todos")
+                        if (isSavedTab) {
+                            viewModel.onSegmentTabSelected(0)
+                        }
+                    }
+                )
+            } else {
+                LazyColumn(
+                    contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 4.dp, bottom = 12.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    items(outfitsForTab, key = { it.id }) { outfit ->
+                        OutfitCard(
+                            outfit = outfit,
+                            onCardClick = { viewModel.selectOutfitForDetail(outfit) },
+                            onFavoriteToggle = { viewModel.toggleFavorite(outfit.id) }
+                        )
+                    }
                 }
             }
         }
@@ -646,46 +631,55 @@ fun ClosyBottomNavigationBar(
     onTabSelected: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    NavigationBar(
-        modifier = modifier,
-        containerColor = MaterialTheme.colorScheme.surface,
-        contentColor = MaterialTheme.colorScheme.onSurface,
+    Surface(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(64.dp),
+        color = MaterialTheme.colorScheme.surface,
         tonalElevation = 8.dp
     ) {
-        val items = listOf(
-            Triple(0, "Inicio", Icons.Default.Home),
-            Triple(1, "Closet", Icons.Default.Checkroom),
-            Triple(2, "Generar", Icons.Default.AutoAwesome),
-            Triple(3, "Perfil", Icons.Default.Person)
-        )
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .navigationBarsPadding()
+                .padding(horizontal = 8.dp),
+            horizontalArrangement = Arrangement.SpaceAround,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            val items = listOf(
+                Triple(0, "Inicio", Icons.Default.Home),
+                Triple(1, "Closet", Icons.Default.Checkroom),
+                Triple(2, "Generar", Icons.Default.AutoAwesome),
+                Triple(3, "Perfil", Icons.Default.Person)
+            )
 
-        items.forEach { (index, title, icon) ->
-            val isSelected = selectedTab == index
-            NavigationBarItem(
-                selected = isSelected,
-                onClick = { onTabSelected(index) },
-                icon = {
+            items.forEach { (index, title, icon) ->
+                val isSelected = selectedTab == index
+                val contentColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+
+                Column(
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .clickable { onTabSelected(index) }
+                        .padding(horizontal = 12.dp, vertical = 4.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
                     Icon(
                         imageVector = icon,
                         contentDescription = title,
-                        modifier = Modifier.size(22.dp)
+                        modifier = Modifier.size(20.dp),
+                        tint = contentColor
                     )
-                },
-                label = {
                     Text(
                         text = title,
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                        color = contentColor,
+                        fontSize = 11.sp
                     )
-                },
-                colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = MaterialTheme.colorScheme.primary,
-                    selectedTextColor = MaterialTheme.colorScheme.primary,
-                    indicatorColor = MaterialTheme.colorScheme.surfaceVariant,
-                    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                )
-            )
+                }
+            }
         }
     }
 }
@@ -969,7 +963,6 @@ fun GarmentItemRow(
 
 @Composable
 fun EmptyStateView(
-    searchQuery: String,
     category: String,
     isSavedTab: Boolean,
     onReset: () -> Unit,
@@ -1004,7 +997,7 @@ fun EmptyStateView(
             text = if (isSavedTab) {
                 "Toca el icono de corazón en cualquier outfit para guardarlo aquí."
             } else {
-                "No encontramos outfits con la búsqueda \"$searchQuery\" o categoría \"$category\". Prueba cambiando los filtros."
+                "No encontramos outfits en la categoría \"$category\". Prueba cambiando los filtros."
             },
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,

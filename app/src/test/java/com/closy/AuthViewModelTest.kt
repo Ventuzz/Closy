@@ -47,15 +47,40 @@ class AuthViewModelTest {
         assertFalse(state.isPasswordVisible)
         assertFalse(state.isLoading)
         assertNull(state.errorMessage)
+        assertNull(state.successMessage)
     }
 
     @Test
-    fun testTabSwitching() {
+    fun testTabSwitchingClearsForm() {
+        viewModel.onEmailChanged("test@closy.app")
+        viewModel.onPasswordChanged("123456")
         viewModel.onTabSelected(1)
-        assertEquals(1, viewModel.uiState.value.selectedTab)
 
+        val state = viewModel.uiState.value
+        assertEquals(1, state.selectedTab)
+        assertEquals("", state.email)
+        assertEquals("", state.password)
+
+        viewModel.onNameChanged("Carlos")
         viewModel.onTabSelected(0)
         assertEquals(0, viewModel.uiState.value.selectedTab)
+        assertEquals("", viewModel.uiState.value.name)
+    }
+
+    @Test
+    fun testClearFormAndLogout() {
+        viewModel.onEmailChanged("test@closy.app")
+        viewModel.onPasswordChanged("123456")
+        viewModel.onTabSelected(1)
+        viewModel.clearForm()
+
+        assertEquals("", viewModel.uiState.value.email)
+        assertEquals("", viewModel.uiState.value.password)
+
+        viewModel.logout()
+        assertFalse(viewModel.uiState.value.isAuthenticated)
+        assertEquals(0, viewModel.uiState.value.selectedTab)
+        assertNull(repository.currentUser.value)
     }
 
     @Test
@@ -98,38 +123,51 @@ class AuthViewModelTest {
     }
 
     @Test
-    fun testSuccessfulRegistrationAndLoginFlow() = runTest {
-        var registerSuccessCalled = false
+    fun testSuccessfulRegistrationAndLoginBypassFlow() = runTest {
+        var registerHasPreference: Boolean? = null
 
-        // Register
+        // 1. New Registration -> Should NOT have saved preference initially
         viewModel.onTabSelected(1)
         viewModel.onNameChanged("María García")
         viewModel.onEmailChanged("maria@closy.app")
         viewModel.onPasswordChanged("123456")
         viewModel.onConfirmPasswordChanged("123456")
 
-        viewModel.onSubmit { registerSuccessCalled = true }
+        viewModel.onSubmitWithPreference { hasPref ->
+            registerHasPreference = hasPref
+        }
         testDispatcher.scheduler.advanceUntilIdle()
 
         assertTrue(viewModel.uiState.value.isAuthenticated)
-        assertTrue(registerSuccessCalled)
-        assertNull(viewModel.uiState.value.errorMessage)
+        assertEquals("Bienvenido María García, gracias por usar Closy", viewModel.uiState.value.successMessage)
 
-        // Reset state for Login test
-        repository.logout()
+        viewModel.dismissSuccessMessage()
+        assertEquals(false, registerHasPreference)
+        assertNull(viewModel.uiState.value.successMessage)
+
+        // User saves preference
+        repository.saveGenderPreference("Mujer")
+
+        // 2. Logout and Login -> Existing user WITH saved preference
+        viewModel.logout()
         val loginViewModel = AuthViewModel(repository)
-        var loginSuccessCalled = false
+        var loginHasPreference: Boolean? = null
 
         loginViewModel.onTabSelected(0)
         loginViewModel.onEmailChanged("maria@closy.app")
         loginViewModel.onPasswordChanged("123456")
-        loginViewModel.onSubmit { loginSuccessCalled = true }
+        loginViewModel.onSubmitWithPreference { hasPref ->
+            loginHasPreference = hasPref
+        }
 
         testDispatcher.scheduler.advanceUntilIdle()
 
         assertTrue(loginViewModel.uiState.value.isAuthenticated)
-        assertTrue(loginSuccessCalled)
-        assertNull(loginViewModel.uiState.value.errorMessage)
+        assertEquals("Inicio de sesión exitoso", loginViewModel.uiState.value.successMessage)
+
+        loginViewModel.dismissSuccessMessage()
+        assertEquals(true, loginHasPreference)
+        assertNull(loginViewModel.uiState.value.successMessage)
     }
 
     @Test
@@ -142,6 +180,7 @@ class AuthViewModelTest {
         viewModel.onConfirmPasswordChanged("123456")
         viewModel.onSubmit { firstSuccess = true }
         testDispatcher.scheduler.advanceUntilIdle()
+        viewModel.dismissSuccessMessage()
         assertTrue(firstSuccess)
 
         // Try registering again with same email
@@ -188,6 +227,9 @@ class AuthViewModelTest {
         testDispatcher.scheduler.advanceUntilIdle()
 
         assertTrue(viewModel.uiState.value.isAuthenticated)
+        assertEquals("Inicio de sesión exitoso", viewModel.uiState.value.successMessage)
+
+        viewModel.dismissSuccessMessage()
         assertTrue(successCalled)
     }
 
@@ -200,6 +242,9 @@ class AuthViewModelTest {
         testDispatcher.scheduler.advanceUntilIdle()
 
         assertTrue(viewModel.uiState.value.isAuthenticated)
+        assertEquals("Inicio de sesión exitoso", viewModel.uiState.value.successMessage)
+
+        viewModel.dismissSuccessMessage()
         assertTrue(successCalled)
     }
 }

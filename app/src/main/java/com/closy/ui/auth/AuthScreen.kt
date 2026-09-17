@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -49,18 +50,20 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.closy.R
 import com.closy.ui.components.ClosyPrimaryButton
 import com.closy.ui.components.ClosyTextField
 import com.closy.ui.components.SegmentedTabControl
+import com.closy.ui.components.TopFloatingNotification
 import com.closy.ui.theme.ClosyTheme
 import com.closy.ui.theme.PillShape
 
 @Composable
 fun AuthScreen(
-    onAuthSuccess: () -> Unit,
+    onAuthSuccess: (hasSavedPreference: Boolean) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: AuthViewModel = viewModel()
 ) {
@@ -75,9 +78,10 @@ fun AuthScreen(
         onConfirmPasswordChanged = viewModel::onConfirmPasswordChanged,
         onTogglePasswordVisibility = viewModel::togglePasswordVisibility,
         onToggleConfirmPasswordVisibility = viewModel::toggleConfirmPasswordVisibility,
-        onSubmit = { viewModel.onSubmit(onAuthSuccess) },
-        onGoogleSignIn = { viewModel.onGoogleSignIn(onAuthSuccess) },
-        onGuestLogin = { viewModel.onGuestLogin(onAuthSuccess) },
+        onSubmit = { viewModel.onSubmitWithPreference(onAuthSuccess) },
+        onGoogleSignIn = { viewModel.onGoogleSignInWithPreference(onAuthSuccess) },
+        onGuestLogin = { viewModel.onGuestLoginWithPreference(onAuthSuccess) },
+        onDismissSuccessDialog = { viewModel.dismissSuccessMessage(onAuthSuccess) },
         modifier = modifier
     )
 }
@@ -95,6 +99,7 @@ fun AuthContent(
     onSubmit: () -> Unit,
     onGoogleSignIn: () -> Unit,
     onGuestLogin: () -> Unit,
+    onDismissSuccessDialog: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -395,6 +400,17 @@ fun AuthContent(
                     )
                 }
             }
+
+            // Top Floating Oval Notification Banner
+            TopFloatingNotification(
+                message = uiState.successMessage,
+                onDismiss = onDismissSuccessDialog,
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .statusBarsPadding()
+                    .padding(top = 8.dp)
+                    .zIndex(10f)
+            )
         }
     }
 }

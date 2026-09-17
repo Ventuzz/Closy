@@ -1,7 +1,10 @@
 package com.closy
 
+import com.closy.data.db.InMemorySavedOutfitDao
 import com.closy.data.repository.OutfitRepository
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -9,33 +12,38 @@ import org.junit.Test
 class OutfitRepositoryTest {
 
     private lateinit var repository: OutfitRepository
+    private lateinit var savedOutfitDao: InMemorySavedOutfitDao
 
     @Before
     fun setUp() {
-        repository = OutfitRepository()
+        savedOutfitDao = InMemorySavedOutfitDao()
+        repository = OutfitRepository(savedOutfitDao)
     }
 
     @Test
-    fun testGetOutfitsFilteredByMujerGender() {
+    fun testGetOutfitsFilteredByMujerGenderStrict() {
         val outfits = repository.getOutfits(genderPreference = "Mujer")
         assertTrue(outfits.isNotEmpty())
         outfits.forEach { outfit ->
-            assertTrue(
-                outfit.genderPreference.equals("Mujer", ignoreCase = true) ||
-                        outfit.genderPreference.equals("Sin género", ignoreCase = true)
-            )
+            assertEquals("Mujer", outfit.genderPreference)
         }
     }
 
     @Test
-    fun testGetOutfitsFilteredByHombreGender() {
+    fun testGetOutfitsFilteredByHombreGenderStrict() {
         val outfits = repository.getOutfits(genderPreference = "Hombre")
         assertTrue(outfits.isNotEmpty())
         outfits.forEach { outfit ->
-            assertTrue(
-                outfit.genderPreference.equals("Hombre", ignoreCase = true) ||
-                        outfit.genderPreference.equals("Sin género", ignoreCase = true)
-            )
+            assertEquals("Hombre", outfit.genderPreference)
+        }
+    }
+
+    @Test
+    fun testGetOutfitsFilteredBySinGeneroStrict() {
+        val outfits = repository.getOutfits(genderPreference = "Sin género")
+        assertTrue(outfits.isNotEmpty())
+        outfits.forEach { outfit ->
+            assertEquals("Sin género", outfit.genderPreference)
         }
     }
 
@@ -98,5 +106,29 @@ class OutfitRepositoryTest {
         val revertedOutfits = repository.getOutfits(genderPreference = "Mujer")
         val revertedOutfit = revertedOutfits.find { it.id == testOutfitId }
         assertEquals(initialSaved, revertedOutfit?.isSaved)
+    }
+
+    @Test
+    fun testPerUserSavedOutfitsIsolation() = runBlocking {
+        val user1 = "user1@closy.app"
+        val user2 = "user2@closy.app"
+
+        // Save outfit_2 for user1
+        repository.saveOutfit(user1, "outfit_2")
+
+        assertTrue(repository.isOutfitSaved(user1, "outfit_2"))
+        assertFalse(repository.isOutfitSaved(user2, "outfit_2"))
+
+        // user1 guardados contains outfit_2
+        val user1Outfits = repository.getOutfits(genderPreference = "Todos", savedOnly = true, userEmail = user1)
+        assertTrue(user1Outfits.any { it.id == "outfit_2" })
+
+        // user2 guardados does NOT contain outfit_2
+        val user2Outfits = repository.getOutfits(genderPreference = "Todos", savedOnly = true, userEmail = user2)
+        assertFalse(user2Outfits.any { it.id == "outfit_2" })
+
+        // Remove outfit_2 for user1
+        repository.removeSavedOutfit(user1, "outfit_2")
+        assertFalse(repository.isOutfitSaved(user1, "outfit_2"))
     }
 }

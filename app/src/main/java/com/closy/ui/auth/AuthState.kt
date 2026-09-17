@@ -10,5 +10,6 @@ data class AuthState(
     val isConfirmPasswordVisible: Boolean = false,
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
+    val successMessage: String? = null,
     val isAuthenticated: Boolean = false
 )

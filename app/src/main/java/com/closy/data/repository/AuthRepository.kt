@@ -5,17 +5,24 @@ import com.closy.data.db.UserDao
 import com.closy.data.db.UserEntity
 import com.closy.data.model.User
 import com.closy.data.model.UserPreferences
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.withContext
 
 class AuthRepository(
     userDao: UserDao? = null
 ) {
-    private val activeUserDao: UserDao = userDao ?: globalUserDao ?: InMemoryUserDao()
+    private val activeUserDao: UserDao = userDao?.also {
+        globalUserDao = it
+        resetSession()
+    } ?: globalUserDao ?: InMemoryUserDao().also {
+        globalUserDao = it
+    }
 
-    private val _currentUser = MutableStateFlow<User?>(null)
-    val currentUser: StateFlow<User?> = _currentUser.asStateFlow()
+    private val _currentUser get() = _sharedCurrentUser
+    val currentUser: StateFlow<User?> get() = _sharedCurrentUser.asStateFlow()
 
     suspend fun login(email: String, pass: String): Result<User> {
         if (email.isBlank() || pass.isBlank()) {
@@ -102,8 +109,11 @@ class AuthRepository(
 
     suspend fun updateGenderPreference(preference: String): Result<Boolean> {
         val user = _currentUser.value
-        if (user != null && user.email.isNotBlank() && user.id != "guest_user") {
-            activeUserDao.updateGenderPreference(user.email, preference)
+        val email = user?.email ?: currentUserEmail
+        if (!email.isNullOrBlank() && user?.id != "guest_user") {
+            withContext(Dispatchers.IO) {
+                activeUserDao.updateGenderPreference(email, preference)
+            }
         }
         val currentPrefs = user?.preferences ?: UserPreferences()
         val updatedPrefs = currentPrefs.copy(genderPreference = preference)
@@ -119,13 +129,21 @@ class AuthRepository(
 
     suspend fun savePreferences(preferences: UserPreferences): Result<Boolean> {
         val user = _currentUser.value
-        if (user != null && user.email.isNotBlank() && user.id != "guest_user") {
-            activeUserDao.updateGenderPreference(user.email, preferences.genderPreference)
+        val email = user?.email ?: currentUserEmail
+        if (!email.isNullOrBlank() && user?.id != "guest_user") {
+            withContext(Dispatchers.IO) {
+                activeUserDao.updateGenderPreference(email, preferences.genderPreference)
+            }
         }
         val updatedUser = user?.copy(preferences = preferences)
             ?: User(id = "guest_user", email = "invitado@closy.app", name = "Invitado", preferences = preferences)
         _currentUser.value = updatedUser
         return Result.success(true)
+    }
+
+    fun hasSavedGenderPreference(): Boolean {
+        val pref = _currentUser.value?.preferences?.genderPreference
+        return !pref.isNullOrEmpty()
     }
 
     fun logout() {
@@ -136,8 +154,18 @@ class AuthRepository(
         @Volatile
         private var globalUserDao: UserDao? = null
 
+        private var _sharedCurrentUser = MutableStateFlow<User?>(null)
+        val sharedCurrentUser: StateFlow<User?> get() = _sharedCurrentUser.asStateFlow()
+
+        val currentUserEmail: String?
+            get() = _sharedCurrentUser.value?.email
+
         fun init(userDao: UserDao) {
             globalUserDao = userDao
+        }
+
+        fun resetSession() {
+            _sharedCurrentUser = MutableStateFlow(null)
         }
     }
 }

@@ -2,11 +2,13 @@ package com.closy.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import com.closy.ui.auth.AuthScreen
+import com.closy.ui.auth.AuthViewModel
 import com.closy.ui.home.HomeScreen
 import com.closy.ui.personalization.PersonalizationScreen
 import kotlinx.serialization.Serializable
@@ -25,6 +27,7 @@ fun AppNavigation(
     modifier: Modifier = Modifier
 ) {
     val backStack = rememberNavBackStack(AuthKey)
+    val authViewModel: AuthViewModel = viewModel()
 
     NavDisplay(
         backStack = backStack,
@@ -34,8 +37,13 @@ fun AppNavigation(
                 when (key) {
                     is AuthKey -> {
                         AuthScreen(
-                            onAuthSuccess = {
-                                backStack.add(PersonalizationKey)
+                            viewModel = authViewModel,
+                            onAuthSuccess = { hasSavedPreference ->
+                                if (hasSavedPreference) {
+                                    backStack.add(HomeKey)
+                                } else {
+                                    backStack.add(PersonalizationKey)
+                                }
                             }
                         )
                     }
@@ -52,6 +60,7 @@ fun AppNavigation(
                                 backStack.add(PersonalizationKey)
                             },
                             onLogout = {
+                                authViewModel.logout()
                                 backStack.clear()
                                 backStack.add(AuthKey)
                             }
@@ -59,8 +68,13 @@ fun AppNavigation(
                     }
                     else -> {
                         AuthScreen(
-                            onAuthSuccess = {
-                                backStack.add(PersonalizationKey)
+                            viewModel = authViewModel,
+                            onAuthSuccess = { hasSavedPreference ->
+                                if (hasSavedPreference) {
+                                    backStack.add(HomeKey)
+                                } else {
+                                    backStack.add(PersonalizationKey)
+                                }
                             }
                         )
                     }
