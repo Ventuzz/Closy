@@ -2,7 +2,7 @@
 
     <style name="Theme.Closy" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="android:windowSplashScreenBackground">@color/closy_splash_background</item>
-        <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_closy_logo</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_closy_splash</item>
         <item name="android:windowSplashScreenIconBackgroundColor">@color/closy_splash_background</item>
         <item name="android:windowActionModeOverlay">true</item>
     </style>

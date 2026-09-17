@@ -24,7 +24,8 @@ data object HomeKey : NavKey
 
 @Composable
 fun AppNavigation(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onDarkModeChange: (Boolean) -> Unit = {}
 ) {
     val backStack = rememberNavBackStack(AuthKey)
     val authViewModel: AuthViewModel = viewModel()
@@ -56,6 +57,7 @@ fun AppNavigation(
                     }
                     is HomeKey -> {
                         HomeScreen(
+                            onDarkModeChange = onDarkModeChange,
                             onNavigateToPersonalization = {
                                 backStack.add(PersonalizationKey)
                             },

@@ -121,7 +121,9 @@ class HomeViewModel(
         category: String,
         color: String,
         season: String,
-        notes: String
+        notes: String,
+        imageUri: String,
+        size: String
     ) {
         if (name.isBlank()) return
         viewModelScope.launch {
@@ -132,22 +134,29 @@ class HomeViewModel(
                         userEmail = email,
                         name = name.trim(),
                         category = category,
-                        color = color.trim().ifBlank { "Sin especificar" },
+                        color = normalizeHexColor(color),
                         season = season,
-                        notes = notes.trim()
+                        notes = notes.trim(),
+                        imageUri = imageUri,
+                        size = size
                     )
                 )
             } else {
                 closetRepository.update(
                     editing.copy(
                         name = name.trim(), category = category,
-                        color = color.trim().ifBlank { "Sin especificar" },
-                        season = season, notes = notes.trim()
+                        color = normalizeHexColor(color),
+                        season = season, notes = notes.trim(), imageUri = imageUri, size = size
                     )
                 )
             }
             loadCloset()
         }
+    }
+
+    private fun normalizeHexColor(value: String): String {
+        val clean = value.trim().removePrefix("#").uppercase()
+        return if (clean.matches(Regex("[0-9A-F]{6}"))) "#$clean" else ""
     }
 
     fun deleteClosetItem(item: ClosetItemEntity) {

@@ -9,7 +9,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
     entities = [UserEntity::class, SavedOutfitEntity::class, ClosetItemEntity::class],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 abstract class ClosyDatabase : RoomDatabase() {
@@ -39,13 +39,20 @@ abstract class ClosyDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE `closet_items` ADD COLUMN `imageUri` TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE `closet_items` ADD COLUMN `size` TEXT NOT NULL DEFAULT ''")
+            }
+        }
+
         fun getDatabase(context: Context): ClosyDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     ClosyDatabase::class.java,
                     "closy_database",
-                ).addMigrations(MIGRATION_2_3)
+                ).addMigrations(MIGRATION_2_3, MIGRATION_3_4)
                     .fallbackToDestructiveMigration(dropAllTables = true)
                     .build()
                 INSTANCE = instance

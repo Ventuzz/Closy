@@ -16,5 +16,7 @@ data class ClosetItemEntity(
     val color: String,
     val season: String,
     val notes: String = "",
+    val imageUri: String = "",
+    val size: String = "",
     val createdAt: Long = System.currentTimeMillis()
 )
