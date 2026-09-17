@@ -1,6 +1,6 @@
 <div align="center">
 
-# 👗 Closy - Tu Estilo, Organizado
+# Closy - Tu Estilo, Organizado
 
 [![Android](https://img.shields.io/badge/Platform-Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://android.com)
 [![Kotlin](https://img.shields.io/badge/Language-Kotlin-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)](https://kotlinlang.org)
@@ -24,11 +24,11 @@
 
 </div>
 
-## 📖 Acerca de Closy
+## Acerca de Closy
 
 **Closy** es una aplicación móvil nativa para Android diseñada para revolucionar la forma en que interactúas con tu ropa diaria. Inspirada en la estética minimalista y moderna de plataformas de inspiración como Pinterest, **Closy** ayuda a los usuarios a explorar outfits sugeridos, clasificar estilos por preferencias individuales (Hombre, Mujer, Sin género) y guardar sus conjuntos favoritos de forma completamente independiente y segura.
 
-### 🌟 Visión del Proyecto
+### Visión del Proyecto
 - **Personalización Inteligente**: Adaptación continua del feed de recomendaciones según las preferencias de estilo seleccionadas por cada usuario (casual, formal, urbano, deportivo, etc.).
 - **Organización e Independencia**: Aislamiento estricto de datos entre cuentas mediante persistencia local segura con **Room Database**.
 - **Diseño Expressive & Moderno**: Paleta cálida beige (`#F8F6F0`), superficies refinadas, tipografía mixta Serif/Sans y botones con contraste equilibrado.
@@ -36,11 +36,11 @@
 
 ---
 
-## 📸 Capturas de Pantalla y Flujo de la Aplicación
+## Capturas de Pantalla y Flujo de la Aplicación
 
 A continuación se detalla el flujo principal de la aplicación con la estructura visual de sus pantallas clave:
 
-### 📱 Flujo de Experiencia de Usuario
+### Flujo de Experiencia de Usuario
 
 | 1. Autenticación | 2. Personalización de Estilo |
 | :---: | :---: |
@@ -59,41 +59,41 @@ A continuación se detalla el flujo principal de la aplicación con la estructur
 
 ---
 
-## ✨ Características Principales
+## Características Principales
 
-### 🔐 1. Autenticación con Persistencia Local (`Room DB`)
+### 1. Autenticación con Persistencia Local (`Room DB`)
 - Control de sesión completo con **Iniciar Sesión** y **Crear Cuenta** a través de un control de pestañas segmentado (`SegmentedTabControl`).
 - Guardado seguro de credenciales e información de usuario en la tabla local `users` (`UserEntity`).
 - Soporte para validación de campos, simulación de login social (Google) y cierre de sesión con limpieza de estado.
 
-### 🔔 2. Notificaciones Flotantes Ovaladas (`TopFloatingNotification`)
+### 2. Notificaciones Flotantes Ovaladas (`TopFloatingNotification`)
 - Mensajes informativos tipo banner flotante superior con forma de píldora/óvalo (`CircleShape`), fondo oscuro (`#111111`) y texto blanco.
 - Animación fluida de entrada y salida vertical con desvanecimiento (`slideInVertically` + `fadeIn`).
 - **Temporizador de desvanecimiento automático** a los **2 segundos** de inactividad para no interrumpir la navegación.
 
-### 🎨 3. Feed Personalizado de Recomendaciones Estilo Pinterest
+### 3. Feed Personalizado de Recomendaciones Estilo Pinterest
 - Visualización de outfits en un layout dinámico inspirado en Pinterest.
 - Cambio dinámico entre pestañas **"Para Ti"** y **"Guardados"**.
 - Filtros por categoría (Casual, Formal, Deportivo, Streetwear, Noche, etc.) actualizables en tiempo real.
 - Algoritmo de filtrado por preferencia de género seleccionada previamente por el usuario.
 
-### 🔒 4. Aislamiento Estricto de Datos por Usuario
+### 4. Aislamiento Estricto de Datos por Usuario
 - La tabla de guardados `saved_outfits` (`SavedOutfitEntity`) utiliza una clave primaria compuesta por `(userEmail, outfitId)`.
 - Garantiza que cada usuario registrado o autenticado tenga su propia lista de outfits favoritos privada, sin mezclar datos entre diferentes cuentas en el mismo dispositivo.
 
-### 👗 5. Desglose Detallado de Prendas e Integración con Pinterest
+### 5. Desglose Detallado de Prendas e Integración con Pinterest
 - Al pulsar en cualquier outfit, se despliega una hoja modal inferior (`ModalBottomSheet`).
 - Muestra el listado individualizado de prendas (camisetas, pantalones, calzado, accesorios) con detalles de marca, categoría y color.
 - Incluye botón directo **"Buscar en Pinterest"** que abre la app o el navegador web con la consulta exacta del conjunto para adquirir o guardar inspiración.
 
-### 🖌️ 6. Tema Personalizado y Diseño Adaptativo
+### 6. Tema Personalizado y Diseño Adaptativo
 - Paleta cromática exclusiva basada en un fondo beige cálido (`#F8F6F0`), tarjetas blancas limpias y botones oscuros (`#111111`).
 - Tipografía refinada combinando familias Serif (títulos) y Sans-Serif (cuerpo y etiquetas).
 - Cumplimiento estricto con las directrices de **Edge-to-Edge** y **Material Design 3**.
 
 ---
 
-## 🛠️ Stack Tecnológico y Arquitectura
+## Stack Tecnológico y Arquitectura
 
 Closy está desarrollado siguiendo las mejores prácticas de desarrollo nativo en Android y la arquitectura recomendada por Google:
 
@@ -132,7 +132,7 @@ Closy está desarrollado siguiendo las mejores prácticas de desarrollo nativo e
 
 ---
 
-## 💻 Requisitos del Sistema e Instalación
+## Requisitos del Sistema e Instalación
 
 ### Requisitos Previos
 - **Android Studio**: Ladybug (2024.2.1) o superior.
@@ -169,7 +169,7 @@ Closy está desarrollado siguiendo las mejores prácticas de desarrollo nativo e
 
 ---
 
-## 📁 Estructura del Proyecto
+## Estructura del Proyecto
 
 El código fuente de Closy está organizado de manera modular por capas y características dentro del paquete `com.closy`:
 
