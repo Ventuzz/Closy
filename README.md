@@ -223,6 +223,6 @@ closy/
 
 <div style="text-align: center;">
 
-Desarrollado con ❤️ usando **Kotlin** y **Jetpack Compose**.
+Desarrollado con cariño usando **Kotlin** y **Jetpack Compose**.
 
 </div>
