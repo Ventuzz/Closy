@@ -65,7 +65,7 @@ import com.closy.ui.theme.PillShape
 fun AuthScreen(
     onAuthSuccess: (hasSavedPreference: Boolean) -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: AuthViewModel = viewModel()
+    viewModel: AuthViewModel = viewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -82,7 +82,7 @@ fun AuthScreen(
         onGoogleSignIn = { viewModel.onGoogleSignInWithPreference(onAuthSuccess) },
         onGuestLogin = { viewModel.onGuestLoginWithPreference(onAuthSuccess) },
         onDismissSuccessDialog = { viewModel.dismissSuccessMessage(onAuthSuccess) },
-        modifier = modifier
+        modifier = modifier,
     )
 }
 
@@ -99,12 +99,12 @@ fun AuthContent(
     onSubmit: () -> Unit,
     onGoogleSignIn: () -> Unit,
     onGuestLogin: () -> Unit,
+    modifier: Modifier = Modifier,
     onDismissSuccessDialog: () -> Unit = {},
-    modifier: Modifier = Modifier
 ) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = MaterialTheme.colorScheme.background,
     ) { innerPadding ->
         Box(
             modifier = Modifier

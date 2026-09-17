@@ -1,5 +1,6 @@
 package com.closy.data.repository
 
+import androidx.annotation.VisibleForTesting
 import com.closy.data.db.InMemorySavedOutfitDao
 import com.closy.data.db.SavedOutfitDao
 import com.closy.data.db.SavedOutfitEntity
@@ -563,6 +564,8 @@ class OutfitRepository(
             globalSavedOutfitDao = savedOutfitDao
         }
 
+        @VisibleForTesting
+        @Suppress("unused")
         fun resetDao() {
             globalSavedOutfitDao = null
         }

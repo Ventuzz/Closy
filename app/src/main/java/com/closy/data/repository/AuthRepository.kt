@@ -1,5 +1,6 @@
 package com.closy.data.repository
 
+import androidx.annotation.VisibleForTesting
 import com.closy.data.db.InMemoryUserDao
 import com.closy.data.db.UserDao
 import com.closy.data.db.UserEntity
@@ -12,7 +13,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 
 class AuthRepository(
-    userDao: UserDao? = null
+    userDao: UserDao? = null,
 ) {
     private val activeUserDao: UserDao = userDao?.also {
         globalUserDao = it
@@ -127,10 +128,12 @@ class AuthRepository(
         return updateGenderPreference(gender)
     }
 
+    @VisibleForTesting
+    @Suppress("unused")
     suspend fun savePreferences(preferences: UserPreferences): Result<Boolean> {
         val user = _currentUser.value
         val email = user?.email ?: currentUserEmail
-        if (!email.isNullOrBlank() && user?.id != "guest_user") {
+        if ((!email.isNullOrBlank()) && user?.id != "guest_user") {
             withContext(Dispatchers.IO) {
                 activeUserDao.updateGenderPreference(email, preferences.genderPreference)
             }
@@ -155,6 +158,9 @@ class AuthRepository(
         private var globalUserDao: UserDao? = null
 
         private var _sharedCurrentUser = MutableStateFlow<User?>(null)
+
+        @VisibleForTesting
+        @Suppress("unused")
         val sharedCurrentUser: StateFlow<User?> get() = _sharedCurrentUser.asStateFlow()
 
         val currentUserEmail: String?

@@ -1,4 +1,4 @@
-<div align="center">
+<div style="text-align: center;">
 
 # Closy - Tu Estilo, Organizado
 
@@ -9,7 +9,7 @@
 [![Room DB](https://img.shields.io/badge/Database-Room-4285F4?style=for-the-badge&logo=sqlite&logoColor=white)](https://developer.android.com/training/data-storage/room)
 [![Min SDK](https://img.shields.io/badge/Min%20SDK-24-brightgreen?style=for-the-badge)](https://developer.android.com)
 
-<p align="center">
+<p style="text-align: center;">
   <b>Una experiencia digital elegante, intuitiva y personalizada para organizar tu guardarropa y descubrir outfits únicos inspirados en tu estilo personal.</b>
 </p>
 
@@ -36,11 +36,17 @@
 
 ---
 
-## Capturas de Pantalla y Flujo de la Aplicación
+## 📸 Capturas de Pantalla y Flujo de la Aplicación
 
-A continuación se detalla el flujo principal de la aplicación con la estructura visual de sus pantallas clave:
+A continuación se detalla el flujo principal de la aplicación con la estructura visual de sus pantallas clave y demostraciones animadas:
 
-### Flujo de Experiencia de Usuario
+### 🎬 Demostraciones Animadas (GIFs)
+
+| 🔐 Flujo de Autenticación y Personalización | 👗 Flujo de Feed Principal y Detalle |
+| :---: | :---: |
+| <img src="docs/gifs/auth_flow.gif" width="320" alt="Flujo de Autenticación y Personalización" /><br/><sub>**Autenticación & Selección de Estilo**<br/>Conmutación de pestañas, ingreso como invitado y personalización de experiencia.</sub> | <img src="docs/gifs/home_feed_flow.gif" width="320" alt="Flujo de Feed Principal y Detalle" /><br/><sub>**Feed Interactivo & Ficha de Outfit**<br/>Filtrado dinámico por categorías y desglose de prendas en ModalBottomSheet.</sub> |
+
+### 📱 Flujo de Experiencia de Usuario (Capturas Reales)
 
 | 1. Autenticación | 2. Personalización de Estilo |
 | :---: | :---: |
@@ -52,10 +58,10 @@ A continuación se detalla el flujo principal de la aplicación con la estructur
 
 | 5. Ficha de Prendas (Bottom Sheet) | 6. Notificaciones Flotantes Ovaladas |
 | :---: | :---: |
-| <img src="docs/screenshots/05_garment_sheet.png" width="300" alt="Desglose de Prendas" /><br/><sub>**Detalle de Outfits e Integración con Pinterest**<br/>Hoja modal inferior (`ModalBottomSheet`) con desglose de ropa y botón directo a Pinterest.</sub> | <img src="docs/screenshots/06_oval_notification.png" width="300" alt="Notificación Flotante" /><br/><sub>**Top Floating Notification**<br/>Banner flotante superior en forma de píldora ovalada con desvanecimiento automático (2s).</sub> |
+| <img src="docs/screenshots/04_outfit_detail.png" width="300" alt="Desglose de Prendas" /><br/><sub>**Detalle de Outfits e Integración con Pinterest**<br/>Hoja modal inferior (`ModalBottomSheet`) con desglose de ropa y botón directo a Pinterest.</sub> | <img src="docs/screenshots/06_oval_notification.png" width="300" alt="Notificación Flotante" /><br/><sub>**Top Floating Notification**<br/>Banner flotante superior en forma de píldora ovalada con desvanecimiento automático (2s).</sub> |
 
 > [!NOTE]
-> *Las capturas de pantalla están estructuradas para asociarse con las imágenes ubicadas en `docs/screenshots/`.*
+> *Las capturas de pantalla reales están ubicadas en `docs/screenshots/` y las demostraciones animadas en `docs/gifs/`.*
 
 ---
 
@@ -215,7 +221,7 @@ closy/
 
 ---
 
-<div align="center">
+<div style="text-align: center;">
 
 Desarrollado con ❤️ usando **Kotlin** y **Jetpack Compose**.
 
