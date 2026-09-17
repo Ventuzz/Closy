@@ -519,7 +519,8 @@ class OutfitRepository(
         searchQuery: String = "",
         categoryFilter: String = "Todos",
         savedOnly: Boolean = false,
-        userEmail: String = getActiveUserEmail()
+        userEmail: String = getActiveUserEmail(),
+        ignoreGenderForSaved: Boolean = false
     ): List<Outfit> {
         val favorites = loadSavedOutfitsForUser(userEmail)
 
@@ -530,7 +531,8 @@ class OutfitRepository(
             }
 
             // Strict gender matching: if "Todos", return all; otherwise match outfit.genderPreference strictly
-            val genderMatches = genderPreference.equals("Todos", ignoreCase = true) ||
+            val genderMatches = (savedOnly && ignoreGenderForSaved) ||
+                    genderPreference.equals("Todos", ignoreCase = true) ||
                     outfit.genderPreference.equals(genderPreference, ignoreCase = true)
 
             // Category match

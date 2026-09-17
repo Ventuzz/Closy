@@ -3,6 +3,9 @@ package com.closy.ui.home
 import android.content.Intent
 import androidx.core.net.toUri
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
@@ -31,26 +34,34 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Checkroom
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DryCleaning
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.Button
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -64,9 +75,11 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -74,6 +87,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -98,6 +112,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.closy.R
 import com.closy.data.model.GarmentItem
+import com.closy.data.db.ClosetItemEntity
 import com.closy.data.model.Outfit
 import com.closy.ui.components.SegmentedTabControl
 import com.closy.ui.theme.ClosyTheme
@@ -142,9 +157,10 @@ fun HomeScreen(
                     onNavigateToPersonalization = onNavigateToPersonalization,
                     onLogout = onLogout
                 )
-                1 -> ClosetTabPlaceholder(onNavigateToHome = { viewModel.onBottomTabSelected(0) })
-                2 -> GenerarTabPlaceholder(onNavigateToHome = { viewModel.onBottomTabSelected(0) })
-                3 -> PerfilTabPlaceholder(
+                1 -> ClosetTab(uiState = uiState, viewModel = viewModel)
+                2 -> RecommendationsTab(uiState = uiState, viewModel = viewModel)
+                3 -> ProfileTab(
+                    uiState = uiState,
                     onNavigateToPersonalization = onNavigateToPersonalization,
                     onLogout = onLogout
                 )
@@ -178,6 +194,9 @@ private fun MainHomeContent(
 ) {
     var isGenderDropdownExpanded by remember { mutableStateOf(false) }
     var isUserMenuExpanded by remember { mutableStateOf(false) }
+    val feedListState = rememberLazyListState()
+    val isFeedScrolled by remember { derivedStateOf { feedListState.firstVisibleItemIndex > 0 || feedListState.firstVisibleItemScrollOffset > 48 } }
+    val logoSize by animateDpAsState(if (isFeedScrolled) 24.dp else 28.dp, label = "HomeLogoSize")
 
     Column(
         modifier = Modifier.fillMaxSize()
@@ -197,7 +216,7 @@ private fun MainHomeContent(
                     painter = painterResource(id = R.drawable.ic_closy_logo),
                     contentDescription = "Closy Logo",
                     tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(28.dp)
+                    modifier = Modifier.size(logoSize)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
@@ -315,27 +334,19 @@ private fun MainHomeContent(
         }
 
         // Header Title: "Ideas de outfits" (Serif typography, italic for "outfits")
-        Text(
-            text = buildAnnotatedString {
-                append("Ideas de ")
-                withStyle(
-                    style = SpanStyle(
-                        fontFamily = FontFamily.Serif,
-                        fontStyle = FontStyle.Italic
-                    )
-                ) {
-                    append("outfits")
-                }
-            },
-            style = MaterialTheme.typography.headlineLarge.copy(
-                fontFamily = FontFamily.Serif,
-                fontWeight = FontWeight.Bold
-            ),
-            color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 2.dp)
-        )
-
-        Spacer(modifier = Modifier.height(6.dp))
+        AnimatedVisibility(visible = !isFeedScrolled, enter = fadeIn(), exit = fadeOut()) {
+            Text(
+                text = buildAnnotatedString {
+                    append("Ideas de ")
+                    withStyle(style = SpanStyle(fontFamily = FontFamily.Serif, fontStyle = FontStyle.Italic)) {
+                        append("outfits")
+                    }
+                },
+                style = MaterialTheme.typography.headlineLarge.copy(fontFamily = FontFamily.Serif, fontWeight = FontWeight.Bold),
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
+            )
+        }
 
         // Segmented Tab Switcher: "Para Ti" vs "Guardados"
         SegmentedTabControl(
@@ -415,9 +426,10 @@ private fun MainHomeContent(
                 )
             } else {
                 LazyColumn(
+                    state = feedListState,
                     contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 4.dp, bottom = 12.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize().animateContentSize()
                 ) {
                     items(outfitsForTab, key = { it.id }) { outfit ->
                         OutfitCard(
@@ -1016,124 +1028,197 @@ fun EmptyStateView(
 }
 
 @Composable
-private fun ClosetTabPlaceholder(onNavigateToHome: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Icon(
-            imageVector = Icons.Default.Checkroom,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(64.dp)
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = "Tu Closet",
-            style = MaterialTheme.typography.titleLarge.copy(fontFamily = FontFamily.Serif),
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = "Próximamente podrás guardar y organizar tus prendas personales para crear combinaciones únicas.",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center
-        )
-        Spacer(modifier = Modifier.height(24.dp))
-        Button(onClick = onNavigateToHome, shape = PillShape) {
-            Text("Explorar Outfits")
+private fun ClosetTab(uiState: HomeUiState, viewModel: HomeViewModel) {
+    var editing by remember { mutableStateOf<ClosetItemEntity?>(null) }
+    var showEditor by remember { mutableStateOf(false) }
+    Column(Modifier.fillMaxSize().padding(horizontal = 20.dp)) {
+        Row(
+            Modifier.fillMaxWidth().padding(vertical = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column {
+                Text("Mi closet", style = MaterialTheme.typography.headlineMedium.copy(fontFamily = FontFamily.Serif), fontWeight = FontWeight.Bold)
+                Text("${uiState.closetItems.size} prendas", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            Button(onClick = { editing = null; showEditor = true }, shape = PillShape) {
+                Icon(Icons.Default.Add, contentDescription = null)
+                Spacer(Modifier.width(6.dp))
+                Text("Agregar")
+            }
         }
+        if (uiState.closetItems.isEmpty()) {
+            Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                Icon(Icons.Default.Checkroom, null, Modifier.size(72.dp), tint = MaterialTheme.colorScheme.primary)
+                Spacer(Modifier.height(16.dp))
+                Text("Tu closet está listo para crecer", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                Text("Agrega tu primera prenda para recibir recomendaciones personalizadas.", textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(16.dp))
+            }
+        } else {
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp), contentPadding = PaddingValues(bottom = 20.dp)) {
+                items(uiState.closetItems, key = { it.id }) { item ->
+                    Card(Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp)) {
+                        Row(Modifier.fillMaxWidth().padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primaryContainer, modifier = Modifier.size(48.dp)) {
+                                Box(contentAlignment = Alignment.Center) { Icon(Icons.Default.Checkroom, null, tint = MaterialTheme.colorScheme.onPrimaryContainer) }
+                            }
+                            Spacer(Modifier.width(12.dp))
+                            Column(Modifier.weight(1f)) {
+                                Text(item.name, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
+                                Text("${item.category} · ${item.color} · ${item.season}", color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                                if (item.notes.isNotBlank()) Text(item.notes, maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.bodySmall)
+                            }
+                            IconButton(onClick = { editing = item; showEditor = true }) { Icon(Icons.Default.Edit, "Editar") }
+                            IconButton(onClick = { viewModel.deleteClosetItem(item) }) { Icon(Icons.Default.Delete, "Eliminar", tint = MaterialTheme.colorScheme.error) }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    if (showEditor) {
+        ClosetItemDialog(
+            item = editing,
+            onDismiss = { showEditor = false },
+            onSave = { name, category, color, season, notes ->
+                viewModel.saveClosetItem(editing, name, category, color, season, notes)
+                showEditor = false
+            }
+        )
     }
 }
 
 @Composable
-private fun GenerarTabPlaceholder(onNavigateToHome: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Icon(
-            imageVector = Icons.Default.AutoAwesome,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(64.dp)
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = "Generador IA",
-            style = MaterialTheme.typography.titleLarge.copy(fontFamily = FontFamily.Serif),
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = "Genera combinaciones automáticas de outfits según el clima, ocasión y tu estilo personal.",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center
-        )
-        Spacer(modifier = Modifier.height(24.dp))
-        Button(onClick = onNavigateToHome, shape = PillShape) {
-            Text("Ver Ideas")
-        }
-    }
-}
-
-@Composable
-private fun PerfilTabPlaceholder(
-    onNavigateToPersonalization: () -> Unit,
-    onLogout: () -> Unit
+private fun ClosetItemDialog(
+    item: ClosetItemEntity?,
+    onDismiss: () -> Unit,
+    onSave: (String, String, String, String, String) -> Unit
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Icon(
-            imageVector = Icons.Default.Person,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(64.dp)
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = "Perfil de Estilo",
-            style = MaterialTheme.typography.titleLarge.copy(fontFamily = FontFamily.Serif),
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = "Gestiona tus preferencias de outfit, estilo de vestir y configuración de cuenta.",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center
-        )
-        Spacer(modifier = Modifier.height(24.dp))
-        Button(
-            onClick = onNavigateToPersonalization,
-            shape = PillShape,
-            modifier = Modifier.fillMaxWidth(0.8f)
-        ) {
-            Text("Ajustar Preferencias")
+    var name by remember(item) { mutableStateOf(item?.name.orEmpty()) }
+    var category by remember(item) { mutableStateOf(item?.category ?: "Parte superior") }
+    var color by remember(item) { mutableStateOf(item?.color.orEmpty()) }
+    var season by remember(item) { mutableStateOf(item?.season ?: "Todo el año") }
+    var notes by remember(item) { mutableStateOf(item?.notes.orEmpty()) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(if (item == null) "Nueva prenda" else "Editar prenda") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                OutlinedTextField(name, { name = it }, label = { Text("Nombre") }, singleLine = true)
+                OutlinedTextField(color, { color = it }, label = { Text("Color") }, singleLine = true)
+                Text("Categoría", fontWeight = FontWeight.SemiBold)
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    items(listOf("Parte superior", "Parte inferior", "Calzado", "Accesorio")) { value ->
+                        FilterChip(selected = category == value, onClick = { category = value }, label = { Text(value) })
+                    }
+                }
+                Text("Temporada", fontWeight = FontWeight.SemiBold)
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    items(listOf("Todo el año", "Calor", "Frío", "Lluvia")) { value ->
+                        FilterChip(selected = season == value, onClick = { season = value }, label = { Text(value) })
+                    }
+                }
+                OutlinedTextField(notes, { notes = it }, label = { Text("Notas") })
+            }
+        },
+        confirmButton = { TextButton(onClick = { onSave(name, category, color, season, notes) }, enabled = name.isNotBlank()) { Text("Guardar") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancelar") } }
+    )
+}
+
+@Composable
+private fun RecommendationsTab(uiState: HomeUiState, viewModel: HomeViewModel) {
+    var occasion by remember { mutableStateOf("Diario") }
+    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        item {
+            Text("Recomendaciones", style = MaterialTheme.typography.headlineMedium.copy(fontFamily = FontFamily.Serif), fontWeight = FontWeight.Bold)
+            Text("Combinaciones basadas en tu estilo y las prendas de tu closet.", color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-        Spacer(modifier = Modifier.height(12.dp))
-        OutlinedButton(
-            onClick = onLogout,
-            shape = PillShape,
-            modifier = Modifier.fillMaxWidth(0.8f)
-        ) {
-            Text("Cerrar Sesión")
+        item {
+            Text("¿Para qué ocasión?", fontWeight = FontWeight.Bold)
+            Spacer(Modifier.height(8.dp))
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf("Diario", "Trabajo", "Evento", "Fin de semana").forEach { value ->
+                    FilterChip(selected = occasion == value, onClick = { occasion = value }, label = { Text(value) })
+                }
+            }
+        }
+        item {
+            Button(onClick = { viewModel.generateRecommendation(occasion) }, Modifier.fillMaxWidth().height(54.dp), shape = PillShape) {
+                Icon(Icons.Default.AutoAwesome, null)
+                Spacer(Modifier.width(8.dp))
+                Text("Generar recomendación")
+            }
+        }
+        uiState.recommendation?.let { outfit ->
+            item {
+                Text("Tu combinación sugerida", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                OutfitCard(outfit = outfit, onCardClick = { viewModel.selectOutfitForDetail(outfit) }, onFavoriteToggle = { viewModel.toggleFavorite(outfit.id) })
+                Spacer(Modifier.height(10.dp))
+                Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
+                    Text(uiState.recommendationReason, Modifier.padding(16.dp), color = MaterialTheme.colorScheme.onPrimaryContainer)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ProfileTab(uiState: HomeUiState, onNavigateToPersonalization: () -> Unit, onLogout: () -> Unit) {
+    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        item {
+            Card(Modifier.fillMaxWidth(), shape = RoundedCornerShape(24.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
+                Column(Modifier.fillMaxWidth().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primary, modifier = Modifier.size(84.dp)) {
+                        Box(contentAlignment = Alignment.Center) { Text(uiState.userName.take(1).uppercase(), color = MaterialTheme.colorScheme.onPrimary, style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold) }
+                    }
+                    Spacer(Modifier.height(12.dp))
+                    Text(uiState.userName, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.Email, null, Modifier.size(16.dp))
+                        Spacer(Modifier.width(6.dp))
+                        Text(uiState.userEmail, style = MaterialTheme.typography.bodyMedium)
+                    }
+                }
+            }
+        }
+        item {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                ProfileStat("${uiState.closetItems.size}", "Prendas", Modifier.weight(1f))
+                ProfileStat("${uiState.savedOutfitCount}", "Guardados", Modifier.weight(1f))
+                ProfileStat(uiState.activeGenderPreference, "Estilo", Modifier.weight(1f))
+            }
+        }
+        item {
+            Card(Modifier.fillMaxWidth(), shape = RoundedCornerShape(18.dp)) {
+                Column(Modifier.padding(16.dp)) {
+                    Text("Tu estilo", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Text("Preferencia actual: ${uiState.activeGenderPreference}", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(Modifier.height(12.dp))
+                    Button(onClick = onNavigateToPersonalization, Modifier.fillMaxWidth(), shape = PillShape) {
+                        Icon(Icons.Default.Palette, null)
+                        Spacer(Modifier.width(8.dp))
+                        Text("Editar preferencias")
+                    }
+                }
+            }
+        }
+        item {
+            OutlinedButton(onClick = onLogout, Modifier.fillMaxWidth().height(52.dp), shape = PillShape) {
+                Icon(Icons.AutoMirrored.Filled.Logout, null)
+                Spacer(Modifier.width(8.dp))
+                Text("Cerrar sesión")
+            }
+        }
+    }
+}
+
+@Composable
+private fun ProfileStat(value: String, label: String, modifier: Modifier = Modifier) {
+    Card(modifier, shape = RoundedCornerShape(16.dp)) {
+        Column(Modifier.fillMaxWidth().padding(vertical = 14.dp, horizontal = 6.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(value, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }

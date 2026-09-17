@@ -25,7 +25,8 @@ class AuthViewModel(
                 password = "",
                 name = "",
                 confirmPassword = "",
-                errorMessage = null
+                errorMessage = null,
+                successMessage = null
             )
         }
     }
@@ -142,7 +143,7 @@ class AuthViewModel(
 
             result.fold(
                 onSuccess = {
-                    pendingAuthSuccessCallback = onAuthSuccess
+                    pendingAuthSuccessCallback = null
                     val msg = if (isSignUp) {
                         "Bienvenido ${currentState.name.trim()}, gracias por usar Closy"
                     } else {
@@ -155,6 +156,7 @@ class AuthViewModel(
                             successMessage = msg
                         )
                     }
+                    onAuthSuccess(hasSavedGenderPreference())
                 },
                 onFailure = { error ->
                     _uiState.update { state ->
@@ -178,7 +180,7 @@ class AuthViewModel(
             val result = repository.loginWithGoogle()
             result.fold(
                 onSuccess = {
-                    pendingAuthSuccessCallback = onAuthSuccess
+                    pendingAuthSuccessCallback = null
                     _uiState.update { state ->
                         state.copy(
                             isLoading = false,
@@ -186,6 +188,7 @@ class AuthViewModel(
                             successMessage = "Inicio de sesión exitoso"
                         )
                     }
+                    onAuthSuccess(hasSavedGenderPreference())
                 },
                 onFailure = { error ->
                     _uiState.update { state ->
@@ -209,7 +212,7 @@ class AuthViewModel(
             val result = repository.loginAsGuest()
             result.fold(
                 onSuccess = {
-                    pendingAuthSuccessCallback = onAuthSuccess
+                    pendingAuthSuccessCallback = null
                     _uiState.update { state ->
                         state.copy(
                             isLoading = false,
@@ -217,6 +220,7 @@ class AuthViewModel(
                             successMessage = "Inicio de sesión exitoso"
                         )
                     }
+                    onAuthSuccess(hasSavedGenderPreference())
                 },
                 onFailure = { error ->
                     _uiState.update { state ->

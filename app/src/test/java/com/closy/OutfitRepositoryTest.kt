@@ -131,4 +131,19 @@ class OutfitRepositoryTest {
         repository.removeSavedOutfit(user1, "outfit_2")
         assertFalse(repository.isOutfitSaved(user1, "outfit_2"))
     }
+
+    @Test
+    fun testSavedOutfitsRemainVisibleWhenGenderChanges() = runBlocking {
+        val user = "gender-change@closy.app"
+        repository.saveOutfit(user, "outfit_7") // outfit de Hombre
+
+        val savedWhileBrowsingMujer = repository.getOutfits(
+            genderPreference = "Mujer",
+            savedOnly = true,
+            userEmail = user,
+            ignoreGenderForSaved = true
+        )
+
+        assertTrue(savedWhileBrowsingMujer.any { it.id == "outfit_7" })
+    }
 }

@@ -81,7 +81,7 @@ fun AuthScreen(
         onSubmit = { viewModel.onSubmitWithPreference(onAuthSuccess) },
         onGoogleSignIn = { viewModel.onGoogleSignInWithPreference(onAuthSuccess) },
         onGuestLogin = { viewModel.onGuestLoginWithPreference(onAuthSuccess) },
-        onDismissSuccessDialog = { viewModel.dismissSuccessMessage(onAuthSuccess) },
+        onDismissSuccessDialog = { viewModel.dismissSuccessMessage() },
         modifier = modifier,
     )
 }
