@@ -45,24 +45,32 @@ A continuación se detalla el flujo principal de la aplicación con la estructur
 
 | Flujo de Autenticación y Personalización | Flujo de Feed Principal y Detalle |
 | :---: | :---: |
-| <img src="docs/gifs/auth_flow.gif" width="320" alt="Flujo de Autenticación y Personalización" /><br/><sub>**Autenticación & Selección de Estilo**<br/>Conmutación de pestañas, ingreso como invitado y personalización de experiencia.</sub> | <img src="docs/gifs/home_feed_flow.gif" width="320" alt="Flujo de Feed Principal y Detalle" /><br/><sub>**Feed Interactivo & Ficha de Outfit**<br/>Filtrado dinámico por categorías y desglose de prendas en ModalBottomSheet.</sub> |
+| <img src="docs/gifs/auth_flow.gif" width="320" alt="Flujo de Autenticación y Personalización" /><br/><sub>**Autenticación & Selección de Estilo**<br/>Conmutación de pestañas, validaciones, ingreso como invitado y personalización de experiencia.</sub> | <img src="docs/gifs/home_feed_flow.gif" width="320" alt="Flujo de Feed Principal y Detalle" /><br/><sub>**Feed Interactivo & Navegación**<br/>Navegación entre pestañas, gestión de favoritos, vista del closet y detalle de prenda en ModalBottomSheet.</sub> |
 
 ### Flujo de Experiencia de Usuario (Capturas Reales)
 
 | 1. Autenticación | 2. Personalización de Estilo |
 | :---: | :---: |
-| <img src="docs/screenshots/01_auth_screen.png" width="300" alt="Pantalla de Autenticación" /><br/><sub>**Iniciar Sesión / Crear Cuenta**<br/>Pestañas segmentadas con soporte para inicio con Google y persistencia de sesión local.</sub> | <img src="docs/screenshots/02_personalization_screen.png" width="300" alt="Personalización de Estilo" /><br/><sub>**Personaliza tu Experiencia**<br/>Selección interactiva de género (Hombre, Mujer, Sin género) con tarjetas ampliadas e imágenes miniatura.</sub> |
+| <img src="docs/screenshots/01_auth_screen.png" width="300" alt="Pantalla de Autenticación" /><br/><sub>**Iniciar Sesión / Crear Cuenta**<br/>Pestañas segmentadas con soporte para inicio con Google, validaciones RFC y manejo de errores.</sub> | <img src="docs/screenshots/02_personalization_screen.png" width="300" alt="Personalización de Estilo" /><br/><sub>**Personaliza tu Experiencia**<br/>Selección interactiva de preferencia de estilo (Hombre, Mujer, Sin género) con tarjetas de 120dp.</sub> |
 
-| 3. Feed de Outfits (Para Ti) | 4. Outfits Guardados & Filtros |
+| 3. Feed de Outfits (Para Ti) | 4. Pestaña Favoritos & Diálogo |
 | :---: | :---: |
-| <img src="docs/screenshots/03_home_feed.png" width="300" alt="Feed Principal de Outfits" /><br/><sub>**Recomendaciones Estilo Pinterest**<br/>Navegación tipo "Para Ti" vs "Favoritos", animación horizontal, chips de filtros y confirmación de eliminación.</sub> | <img src="docs/screenshots/04_saved_outfits.png" width="300" alt="Outfits Guardados" /><br/><sub>**Guardados Aislados por Usuario**<br/>Vista de outfits marcados como favoritos vinculados de forma exclusiva al usuario activo.</sub> |
+| <img src="docs/screenshots/03_home_feed.png" width="300" alt="Feed Principal de Outfits" /><br/><sub>**Recomendaciones Estilo Pinterest**<br/>Tarjetas estilizadas con insignias de origen, número de prendas coincidentes y chips de filtros.</sub> | <img src="docs/screenshots/04_favoritos_screen.png" width="300" alt="Favoritos y Confirmación" /><br/><sub>**Confirmación de Eliminación**<br/>Pestaña de favoritos aislada por usuario con cuadro de diálogo de confirmación para desmarcar.</sub> |
 
-| 5. Ficha de Prendas (Bottom Sheet) | 6. Notificaciones Flotantes Ovaladas |
+| 5. Closet Virtual (13 Prendas) | 6. Detalle de Prenda (Bottom Sheet) |
 | :---: | :---: |
-| <img src="docs/screenshots/05_garment_sheet.png" width="300" alt="Desglose de Prendas" /><br/><sub>**Detalle de Outfits e Integración con Pinterest**<br/>Hoja modal inferior (`ModalBottomSheet`) con desglose de ropa y botón directo a Pinterest.</sub> | <img src="docs/screenshots/06_oval_notification.png" width="300" alt="Notificación Flotante" /><br/><sub>**Top Floating Notification**<br/>Banner flotante superior en forma de píldora ovalada con desvanecimiento automático a los 2 segundos.</sub> |
+| <img src="docs/screenshots/05_closet_screen.png" width="300" alt="Closet Virtual" /><br/><sub>**Gestión de Closet**<br/>Cuadrícula interactiva con 13 prendas semilla precargadas, contador dinámico y filtros por categoría.</sub> | <img src="docs/screenshots/06_garment_sheet.png" width="300" alt="Detalle de Prenda" /><br/><sub>**Ficha Modal Inferior**<br/>Hoja modal inferior (`ModalBottomSheet`) con imagen ampliada, categoría, subcategoría, color y estado.</sub> |
+
+| 7. Generador de Combinaciones | 8. Perfil de Usuario (Modo Oscuro) |
+| :---: | :---: |
+| <img src="docs/screenshots/07_generar_tab.png" width="300" alt="Generador de Outfits" /><br/><sub>**Motor de Combinaciones**<br/>Selección de múltiples etiquetas de estilo para la generación inteligente de outfits.</sub> | <img src="docs/screenshots/08_profile_screen.png" width="300" alt="Perfil de Usuario" /><br/><sub>**Panel de Perfil & Tema Oscuro**<br/>Contadores en tiempo real, selección de preferencias, conmutador de Modo Oscuro y cierre de sesión.</sub> |
+
+| 9. Notificación Flotante Ovalada | 10. Diálogo de Salida (BackHandler) |
+| :---: | :---: |
+| <img src="docs/screenshots/09_oval_notification.png" width="300" alt="Notificación Ovalada Flotante" /><br/><sub>**Top Floating Banner**<br/>Píldora flotante superior en tono oscuro con animación fluida y temporizador de 2 segundos.</sub> | <img src="docs/screenshots/10_back_dialog.png" width="300" alt="Diálogo de Salida" /><br/><sub>**Intercepción de Retroceso**<br/>Manejo mediante `BackHandler` con cuadro de diálogo de confirmación antes de salir.</sub> |
 
 > [!NOTE]
-> *Las capturas de pantalla reales están ubicadas en `docs/screenshots/` y las demostraciones animadas en `docs/gifs/`.*
+> *Todas las capturas de pantalla reales están ubicadas en `docs/screenshots/` y las demostraciones animadas en `docs/gifs/`.*
 
 ---
 
