@@ -83,54 +83,107 @@ class AuthViewModel(
         _uiState.update { it.copy(isConfirmPasswordVisible = !it.isConfirmPasswordVisible) }
     }
 
+    fun validateAndSanitizeInput(isSignUp: Boolean): Boolean {
+        val currentState = _uiState.value
+        val trimmedName = currentState.name.trim()
+        val trimmedEmail = currentState.email.trim()
+        val trimmedPassword = currentState.password.trim()
+        val trimmedConfirmPassword = currentState.confirmPassword.trim()
+
+        _uiState.update {
+            it.copy(
+                name = trimmedName,
+                email = trimmedEmail,
+                password = trimmedPassword,
+                confirmPassword = trimmedConfirmPassword
+            )
+        }
+
+        val emailRegex = Regex("[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}")
+
+        if (isSignUp) {
+            if (trimmedName.isBlank()) {
+                _uiState.update { it.copy(errorMessage = "Ingresa tu nombre completo") }
+                return false
+            }
+            if (trimmedName.length > 50) {
+                _uiState.update { it.copy(errorMessage = "El nombre no puede exceder 50 caracteres") }
+                return false
+            }
+            if (trimmedEmail.isBlank()) {
+                _uiState.update { it.copy(errorMessage = "Ingresa tu correo electrónico") }
+                return false
+            }
+            if (trimmedEmail.length > 50) {
+                _uiState.update { it.copy(errorMessage = "El correo electrónico no puede exceder 50 caracteres") }
+                return false
+            }
+            if (!emailRegex.matches(trimmedEmail)) {
+                _uiState.update { it.copy(errorMessage = "Ingresa un correo electrónico válido") }
+                return false
+            }
+            if (trimmedPassword.isBlank()) {
+                _uiState.update { it.copy(errorMessage = "Ingresa tu contraseña") }
+                return false
+            }
+            if (trimmedPassword.length < 6) {
+                _uiState.update { it.copy(errorMessage = "La contraseña debe tener al menos 6 caracteres") }
+                return false
+            }
+            if (trimmedPassword.length > 50) {
+                _uiState.update { it.copy(errorMessage = "La contraseña no puede exceder 50 caracteres") }
+                return false
+            }
+            if (trimmedConfirmPassword.isBlank()) {
+                _uiState.update { it.copy(errorMessage = "Confirma tu contraseña") }
+                return false
+            }
+            if (trimmedPassword != trimmedConfirmPassword) {
+                _uiState.update { it.copy(errorMessage = "Las contraseñas no coinciden") }
+                return false
+            }
+        } else {
+            if (trimmedEmail.isBlank()) {
+                _uiState.update { it.copy(errorMessage = "Ingresa tu correo electrónico") }
+                return false
+            }
+            if (trimmedEmail.length > 50) {
+                _uiState.update { it.copy(errorMessage = "El correo electrónico no puede exceder 50 caracteres") }
+                return false
+            }
+            if (!emailRegex.matches(trimmedEmail)) {
+                _uiState.update { it.copy(errorMessage = "Ingresa un correo electrónico válido") }
+                return false
+            }
+            if (trimmedPassword.isBlank()) {
+                _uiState.update { it.copy(errorMessage = "Ingresa tu contraseña") }
+                return false
+            }
+            if (trimmedPassword.length < 6) {
+                _uiState.update { it.copy(errorMessage = "La contraseña debe tener al menos 6 caracteres") }
+                return false
+            }
+            if (trimmedPassword.length > 50) {
+                _uiState.update { it.copy(errorMessage = "La contraseña no puede exceder 50 caracteres") }
+                return false
+            }
+        }
+
+        _uiState.update { it.copy(errorMessage = null) }
+        return true
+    }
+
     fun onSubmit(onAuthSuccess: () -> Unit) {
         onSubmitWithPreference { _ -> onAuthSuccess() }
     }
 
     fun onSubmitWithPreference(onAuthSuccess: (hasSavedPreference: Boolean) -> Unit) {
-        val currentState = _uiState.value
-
-        if (currentState.selectedTab == 0) {
-            // Login Validation
-            if (currentState.email.isBlank()) {
-                _uiState.update { it.copy(errorMessage = "Ingresa tu correo electrónico") }
-                return
-            }
-            if (!currentState.email.contains("@") || !currentState.email.contains(".")) {
-                _uiState.update { it.copy(errorMessage = "Ingresa un correo electrónico válido") }
-                return
-            }
-            if (currentState.password.isBlank()) {
-                _uiState.update { it.copy(errorMessage = "Ingresa tu contraseña") }
-                return
-            }
-            if (currentState.password.length < 6) {
-                _uiState.update { it.copy(errorMessage = "La contraseña debe tener al menos 6 caracteres") }
-                return
-            }
-        } else {
-            // Register Validation
-            if (currentState.name.isBlank()) {
-                _uiState.update { it.copy(errorMessage = "Ingresa tu nombre completo") }
-                return
-            }
-            if (currentState.email.isBlank()) {
-                _uiState.update { it.copy(errorMessage = "Ingresa tu correo electrónico") }
-                return
-            }
-            if (!currentState.email.contains("@") || !currentState.email.contains(".")) {
-                _uiState.update { it.copy(errorMessage = "Ingresa un correo electrónico válido") }
-                return
-            }
-            if (currentState.password.length < 6) {
-                _uiState.update { it.copy(errorMessage = "La contraseña debe tener al menos 6 caracteres") }
-                return
-            }
-            if (currentState.password != currentState.confirmPassword) {
-                _uiState.update { it.copy(errorMessage = "Las contraseñas no coinciden") }
-                return
-            }
+        val isSignUp = _uiState.value.selectedTab == 1
+        if (!validateAndSanitizeInput(isSignUp)) {
+            return
         }
+
+        val currentState = _uiState.value
 
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }

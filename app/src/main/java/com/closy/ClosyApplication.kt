@@ -10,8 +10,8 @@ class ClosyApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         val database = ClosyDatabase.getDatabase(this)
-        AuthRepository.init(database.userDao())
+        AuthRepository.init(database.userDao(), database.savedOutfitDao(), database.closetGarmentDao())
         OutfitRepository.init(database.savedOutfitDao())
-        ClosetRepository.init(database.closetItemDao())
+        ClosetRepository.init(database.closetGarmentDao(), database.closetItemDao())
     }
 }

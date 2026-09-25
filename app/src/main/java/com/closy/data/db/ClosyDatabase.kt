@@ -8,14 +8,15 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
-    entities = [UserEntity::class, SavedOutfitEntity::class, ClosetItemEntity::class],
-    version = 4,
+    entities = [UserEntity::class, SavedOutfitEntity::class, ClosetItemEntity::class, ClosetGarmentEntity::class],
+    version = 5,
     exportSchema = false
 )
 abstract class ClosyDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
     abstract fun savedOutfitDao(): SavedOutfitDao
     abstract fun closetItemDao(): ClosetItemDao
+    abstract fun closetGarmentDao(): ClosetGarmentDao
 
     companion object {
         @Volatile
@@ -46,13 +47,30 @@ abstract class ClosyDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """CREATE TABLE IF NOT EXISTS `closet_garments` (
+                        `id` TEXT NOT NULL PRIMARY KEY,
+                        `userEmail` TEXT NOT NULL,
+                        `name` TEXT NOT NULL,
+                        `category` TEXT NOT NULL,
+                        `color` TEXT NOT NULL,
+                        `imageUrl` TEXT NOT NULL,
+                        `styleTag` TEXT NOT NULL
+                    )""".trimIndent()
+                )
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_closet_garments_userEmail` ON `closet_garments` (`userEmail`)")
+            }
+        }
+
         fun getDatabase(context: Context): ClosyDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     ClosyDatabase::class.java,
                     "closy_database",
-                ).addMigrations(MIGRATION_2_3, MIGRATION_3_4)
+                ).addMigrations(MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
                     .fallbackToDestructiveMigration(dropAllTables = true)
                     .build()
                 INSTANCE = instance

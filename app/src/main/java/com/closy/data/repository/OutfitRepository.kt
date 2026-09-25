@@ -1,6 +1,7 @@
 package com.closy.data.repository
 
 import androidx.annotation.VisibleForTesting
+import com.closy.data.db.ClosetGarmentEntity
 import com.closy.data.db.InMemorySavedOutfitDao
 import com.closy.data.db.SavedOutfitDao
 import com.closy.data.db.SavedOutfitEntity
@@ -30,15 +31,15 @@ class OutfitRepository(
     }
 
     fun getActiveUserEmail(): String {
-        return AuthRepository.currentUserEmail ?: "invitado@closy.app"
+        return AuthRepository.currentUserEmail ?: "guest@closy.com"
     }
 
     fun loadSavedOutfitsForUser(userEmail: String = getActiveUserEmail()): Set<String> {
         val ids = runBlocking {
             withContext(Dispatchers.IO) {
-                activeSavedOutfitDao.getSavedOutfitIdsForUser(userEmail)
+                activeSavedOutfitDao.getSavedOutfitIdsForUser(userEmail).toSet()
             }
-        }.toSet()
+        }
         _favoriteOutfitIds.value = ids
         return ids
     }
@@ -98,7 +99,7 @@ class OutfitRepository(
                 GarmentItem("Mocasines de Cuero", "Calzado", "Stradivarius"),
                 GarmentItem("Bolso Crossbody", "Accesorios", "Parfois")
             ),
-            isSaved = true,
+            isSaved = false,
             pinterestUrl = "https://pinterest.com/pin/101",
             aspectRatio = 1.35f,
             pinterestHandle = "@vogue_spain",
@@ -173,7 +174,7 @@ class OutfitRepository(
                 GarmentItem("Sandalias de Esparto", "Calzado", "Castañer"),
                 GarmentItem("Sombrero de Paja", "Accesorios", "Zara")
             ),
-            isSaved = true,
+            isSaved = false,
             pinterestUrl = "https://pinterest.com/pin/104",
             aspectRatio = 1.45f,
             pinterestHandle = "@fashiongram",
@@ -250,7 +251,7 @@ class OutfitRepository(
                 GarmentItem("Pantalón Chino Beige", "Pantalón/Falda", "Dockers"),
                 GarmentItem("Zapatillas Bajas Blancas", "Calzado", "Adidas")
             ),
-            isSaved = true,
+            isSaved = false,
             pinterestUrl = "https://pinterest.com/pin/107",
             aspectRatio = 1.4f,
             pinterestHandle = "@mrporter",
@@ -402,7 +403,7 @@ class OutfitRepository(
                 GarmentItem("Zapatillas Minimalistas Blancas", "Calzado", "Veja"),
                 GarmentItem("Tote Bag de Lienzo", "Accesorios", "MUJI")
             ),
-            isSaved = true,
+            isSaved = false,
             pinterestUrl = "https://pinterest.com/pin/113",
             aspectRatio = 1.4f,
             pinterestHandle = "@minimalism_outfits",
@@ -514,13 +515,55 @@ class OutfitRepository(
         )
     )
 
+    fun calculateMatchedGarmentsCount(outfit: Outfit, closetGarments: List<ClosetGarmentEntity>): Int {
+        if (closetGarments.isEmpty() || outfit.garments.isEmpty()) return 0
+
+        var matchCount = 0
+        for (outfitGarment in outfit.garments) {
+            val isMatched = closetGarments.any { closetItem ->
+                isGarmentMatch(closetItem, outfitGarment)
+            }
+            if (isMatched) {
+                matchCount++
+            }
+        }
+        return matchCount
+    }
+
+    private fun isGarmentMatch(closetItem: ClosetGarmentEntity, outfitGarment: GarmentItem): Boolean {
+        val closetName = closetItem.name.lowercase()
+        val outfitName = outfitGarment.name.lowercase()
+        val closetCat = closetItem.category.lowercase()
+        val outfitCat = outfitGarment.category.lowercase()
+
+        if (closetName.contains(outfitName) || outfitName.contains(closetName)) return true
+
+        val keyWords = listOf(
+            "blazer", "saco", "camisa", "top", "pantalón", "pantalon", "jeans", "denim",
+            "mocasines", "sneakers", "zapatillas", "chaqueta", "reloj", "gafas", "vestido",
+            "sudadera", "hoodie", "botas", "sandalias", "falda", "bolso", "corbata"
+        )
+        for (kw in keyWords) {
+            if (closetName.contains(kw) && outfitName.contains(kw)) return true
+        }
+
+        if ((closetCat.contains("camisa") || closetCat.contains("top")) && outfitCat.contains("camisa")) return true
+        if ((closetCat.contains("pantalón") || closetCat.contains("pantalon") || closetCat.contains("jean")) && outfitCat.contains("pantalón")) return true
+        if (closetCat.contains("calzado") && outfitCat.contains("calzado")) return true
+        if (closetCat.contains("accesorio") && outfitCat.contains("accesorio")) return true
+        if (closetCat.contains("saco") && (outfitCat.contains("camisa") || outfitCat.contains("saco"))) return true
+
+        return false
+    }
+
     fun getOutfits(
         genderPreference: String,
         searchQuery: String = "",
         categoryFilter: String = "Todos",
         savedOnly: Boolean = false,
         userEmail: String = getActiveUserEmail(),
-        ignoreGenderForSaved: Boolean = false
+        ignoreGenderForSaved: Boolean = false,
+        closetGarments: List<ClosetGarmentEntity> = emptyList()
     ): List<Outfit> {
         val favorites = loadSavedOutfitsForUser(userEmail)
 
@@ -554,7 +597,13 @@ class OutfitRepository(
 
             genderMatches && categoryMatches && searchMatches
         }.map { outfit ->
-            outfit.copy(isSaved = favorites.contains(outfit.id))
+            val isFav = favorites.contains(outfit.id)
+            val matchedCount = calculateMatchedGarmentsCount(outfit, closetGarments)
+            outfit.copy(
+                isSaved = isFav,
+                isFavorite = isFav,
+                matchedGarmentsCount = matchedCount
+            )
         }
     }
 
@@ -565,6 +614,8 @@ class OutfitRepository(
         fun init(savedOutfitDao: SavedOutfitDao) {
             globalSavedOutfitDao = savedOutfitDao
         }
+
+        fun getGlobalSavedOutfitDao(): SavedOutfitDao? = globalSavedOutfitDao
 
         @VisibleForTesting
         @Suppress("unused")

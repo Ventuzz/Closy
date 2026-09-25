@@ -10,11 +10,13 @@ data class Outfit(
     val itemsCount: Int,
     val garments: List<GarmentItem> = emptyList(),
     val isSaved: Boolean = false,
+    val isFavorite: Boolean = isSaved,
     val source: String = "Pinterest",
     val pinterestUrl: String = "https://pinterest.com",
     val aspectRatio: Float = 1.3f,
     val pinterestHandle: String = "@pinterest",
     val garmentThumbnails: List<String> = emptyList(),
     val garmentSummary: String = "",
-    val hashtags: List<String> = emptyList()
+    val hashtags: List<String> = emptyList(),
+    val matchedGarmentsCount: Int = 0
 )

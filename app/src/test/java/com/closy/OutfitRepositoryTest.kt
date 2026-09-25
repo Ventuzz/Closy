@@ -69,8 +69,10 @@ class OutfitRepositoryTest {
     }
 
     @Test
-    fun testGetOutfitsFilteredBySavedOnly() {
-        val savedOutfits = repository.getOutfits(genderPreference = "Todos", savedOnly = true)
+    fun testGetOutfitsFilteredBySavedOnly() = runBlocking {
+        val userEmail = repository.getActiveUserEmail()
+        repository.saveOutfit(userEmail, "outfit_1")
+        val savedOutfits = repository.getOutfits(genderPreference = "Todos", savedOnly = true, userEmail = userEmail)
         assertTrue(savedOutfits.isNotEmpty())
         savedOutfits.forEach { outfit ->
             assertTrue(outfit.isSaved)
@@ -145,5 +147,22 @@ class OutfitRepositoryTest {
         )
 
         assertTrue(savedWhileBrowsingMujer.any { it.id == "outfit_7" })
+    }
+
+    @Test
+    fun testGuestAccountInitialSavedOutfitsIsEmpty() = runBlocking {
+        val guestEmail = "guest@closy.com"
+        val savedOutfits = repository.getOutfits(genderPreference = "Todos", savedOnly = true, userEmail = guestEmail)
+        assertTrue(savedOutfits.isEmpty())
+        assertFalse(repository.isOutfitSaved(guestEmail, "outfit_1"))
+        assertTrue(repository.favoriteOutfitIds.value.isEmpty())
+    }
+
+    @Test
+    fun testInvitadoAccountInitialSavedOutfitsIsEmpty() = runBlocking {
+        val guestEmail = "invitado@closy.app"
+        val savedOutfits = repository.getOutfits(genderPreference = "Todos", savedOnly = true, userEmail = guestEmail)
+        assertTrue(savedOutfits.isEmpty())
+        assertFalse(repository.isOutfitSaved(guestEmail, "outfit_1"))
     }
 }

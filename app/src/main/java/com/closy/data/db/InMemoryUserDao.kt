@@ -26,4 +26,8 @@ class InMemoryUserDao : UserDao {
             users[index] = users[index].copy(genderPreference = genderPreference)
         }
     }
+
+    override suspend fun deleteUserByEmail(email: String) {
+        users.removeAll { it.email.equals(email, ignoreCase = true) }
+    }
 }

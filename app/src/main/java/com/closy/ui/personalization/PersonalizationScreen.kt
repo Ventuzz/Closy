@@ -38,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -181,7 +182,7 @@ fun PersonalizationContent(
                 // 3 Card Options
                 Column(
                     modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                    verticalArrangement = Arrangement.spacedBy(22.dp)
                 ) {
                     genderOptions.forEach { option ->
                         GenderCardOption(
@@ -230,7 +231,7 @@ fun GenderCardOption(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val cardShape = RoundedCornerShape(16.dp)
+    val cardShape = RoundedCornerShape(18.dp)
 
     Card(
         modifier = modifier
@@ -253,15 +254,15 @@ fun GenderCardOption(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(72.dp),
+                .height(118.dp)
+                .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Image thumbnail on left
             Box(
                 modifier = Modifier
-                    .width(84.dp)
-                    .fillMaxHeight()
-                    .clip(RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp))
+                    .size(90.dp)
+                    .clip(RoundedCornerShape(12.dp))
                     .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center
             ) {
@@ -287,21 +288,26 @@ fun GenderCardOption(
                 }
             }
 
-            Spacer(modifier = Modifier.width(14.dp))
+            Spacer(modifier = Modifier.width(16.dp))
 
             Column(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
                     text = option.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Normal,
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontSize = 22.sp,
+                        fontFamily = FontFamily.Serif
+                    ),
+                    fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
-                Spacer(modifier = Modifier.height(2.dp))
+                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = option.subtitle,
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontSize = 14.sp
+                    ),
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -312,7 +318,7 @@ fun GenderCardOption(
                 imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(20.dp).padding(end = 4.dp)
+                modifier = Modifier.size(24.dp)
             )
         }
     }

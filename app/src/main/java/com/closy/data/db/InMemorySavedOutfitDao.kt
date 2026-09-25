@@ -1,12 +1,7 @@
 package com.closy.data.db
 
 class InMemorySavedOutfitDao : SavedOutfitDao {
-    private val savedOutfits = mutableListOf<SavedOutfitEntity>(
-        SavedOutfitEntity("invitado@closy.app", "outfit_1"),
-        SavedOutfitEntity("invitado@closy.app", "outfit_4"),
-        SavedOutfitEntity("invitado@closy.app", "outfit_7"),
-        SavedOutfitEntity("invitado@closy.app", "outfit_13")
-    )
+    private val savedOutfits = mutableListOf<SavedOutfitEntity>()
 
     override suspend fun saveOutfit(savedOutfit: SavedOutfitEntity) {
         savedOutfits.removeAll { it.userEmail == savedOutfit.userEmail && it.outfitId == savedOutfit.outfitId }
@@ -23,5 +18,9 @@ class InMemorySavedOutfitDao : SavedOutfitDao {
 
     override suspend fun isOutfitSaved(userEmail: String, outfitId: String): Boolean {
         return savedOutfits.any { it.userEmail == userEmail && it.outfitId == outfitId }
+    }
+
+    override suspend fun deleteAllForUser(userEmail: String) {
+        savedOutfits.removeAll { it.userEmail.equals(userEmail, ignoreCase = true) }
     }
 }

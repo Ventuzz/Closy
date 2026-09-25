@@ -18,4 +18,7 @@ interface UserDao {
 
     @Query("UPDATE users SET genderPreference = :genderPreference WHERE email = :email")
     suspend fun updateGenderPreference(email: String, genderPreference: String)
+
+    @Query("DELETE FROM users WHERE LOWER(email) = LOWER(:email)")
+    suspend fun deleteUserByEmail(email: String)
 }

@@ -247,4 +247,64 @@ class AuthViewModelTest {
         viewModel.dismissSuccessMessage()
         assertTrue(successCalled)
     }
+
+    @Test
+    fun testValidateAndSanitizeInputInvalidEmailFormat() {
+        viewModel.onTabSelected(0)
+        viewModel.onEmailChanged("correo-invalido")
+        viewModel.onPasswordChanged("123456")
+
+        val isValid = viewModel.validateAndSanitizeInput(isSignUp = false)
+
+        assertFalse(isValid)
+        assertEquals("Ingresa un correo electrónico válido", viewModel.uiState.value.errorMessage)
+    }
+
+    @Test
+    fun testValidateAndSanitizeInputMaxLengthEnforcement() {
+        viewModel.onTabSelected(1)
+        val longName = "A".repeat(51)
+        viewModel.onNameChanged(longName)
+        viewModel.onEmailChanged("test@closy.app")
+        viewModel.onPasswordChanged("123456")
+        viewModel.onConfirmPasswordChanged("123456")
+
+        var isValid = viewModel.validateAndSanitizeInput(isSignUp = true)
+        assertFalse(isValid)
+        assertEquals("El nombre no puede exceder 50 caracteres", viewModel.uiState.value.errorMessage)
+
+        viewModel.onNameChanged("Carlos")
+        val longEmail = "a".repeat(45) + "@closy.app" // > 50 chars
+        viewModel.onEmailChanged(longEmail)
+
+        isValid = viewModel.validateAndSanitizeInput(isSignUp = true)
+        assertFalse(isValid)
+        assertEquals("El correo electrónico no puede exceder 50 caracteres", viewModel.uiState.value.errorMessage)
+
+        viewModel.onEmailChanged("carlos@closy.app")
+        val longPassword = "1".repeat(51)
+        viewModel.onPasswordChanged(longPassword)
+        viewModel.onConfirmPasswordChanged(longPassword)
+
+        isValid = viewModel.validateAndSanitizeInput(isSignUp = true)
+        assertFalse(isValid)
+        assertEquals("La contraseña no puede exceder 50 caracteres", viewModel.uiState.value.errorMessage)
+    }
+
+    @Test
+    fun testValidateAndSanitizeInputTrimmingWhitespace() {
+        viewModel.onTabSelected(1)
+        viewModel.onNameChanged("  Carlos Lopez  ")
+        viewModel.onEmailChanged("  carlos@closy.app  ")
+        viewModel.onPasswordChanged("  123456  ")
+        viewModel.onConfirmPasswordChanged("  123456  ")
+
+        val isValid = viewModel.validateAndSanitizeInput(isSignUp = true)
+
+        assertTrue(isValid)
+        assertEquals("Carlos Lopez", viewModel.uiState.value.name)
+        assertEquals("carlos@closy.app", viewModel.uiState.value.email)
+        assertEquals("123456", viewModel.uiState.value.password)
+        assertEquals("123456", viewModel.uiState.value.confirmPassword)
+    }
 }
