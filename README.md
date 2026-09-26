@@ -11,6 +11,7 @@
 
 <p style="text-align: center;">
   <b> José Antonio Vázquez Mora </b>
+  
   <b> Miguel Adalberto Mendoza Espinoza </b>
 </p>
 
