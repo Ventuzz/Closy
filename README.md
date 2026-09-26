@@ -10,9 +10,12 @@
 [![Min SDK](https://img.shields.io/badge/Min%20SDK-24-brightgreen?style=for-the-badge)](https://developer.android.com)
 
 <p style="text-align: center;">
-  <b>José Antonio Vázquez Mora
-    Miguel Adalberto Mendoza Espinoza
-    Una experiencia digital elegante, intuitiva y personalizada para organizar tu guardarropa, gestionar tu closet virtual y descubrir combinaciones y outfits únicos inspirados en tu estilo personal.</b>
+  <b> José Antonio Vázquez Mora </b>
+  <b> Miguel Adalberto Mendoza Espinoza </b>
+</p>
+
+<p style="text-align: center;">
+  <b>Una experiencia digital elegante, intuitiva y personalizada para organizar tu guardarropa, gestionar tu closet virtual y descubrir combinaciones y outfits únicos inspirados en tu estilo personal.</b>
 </p>
 
 [Visión General](#acerca-de-closy) •
