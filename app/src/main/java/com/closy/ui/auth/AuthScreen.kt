@@ -21,6 +21,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.ButtonDefaults
@@ -54,6 +55,7 @@ import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.closy.R
+import com.closy.data.repository.ThemeRepository
 import com.closy.ui.components.ClosyPrimaryButton
 import com.closy.ui.components.ClosyTextField
 import com.closy.ui.components.SegmentedTabControl
@@ -111,6 +113,21 @@ fun AuthContent(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
+            val isDarkMode by ThemeRepository.isDarkMode.collectAsStateWithLifecycle()
+            IconButton(
+                onClick = { ThemeRepository.toggleDarkMode() },
+                modifier = Modifier
+                    .zIndex(1f)
+                    .align(Alignment.TopEnd)
+                    .padding(top = 12.dp, end = 16.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.DarkMode,
+                    contentDescription = if (isDarkMode) "Modo Claro" else "Modo Oscuro",
+                    tint = if (isDarkMode) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground
+                )
+            }
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()

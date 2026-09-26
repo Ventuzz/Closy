@@ -1,7 +1,9 @@
 package com.closy.data.repository
 
 import androidx.annotation.VisibleForTesting
+import com.closy.data.db.ClosetGarmentDao
 import com.closy.data.db.InMemoryUserDao
+import com.closy.data.db.SavedOutfitDao
 import com.closy.data.db.UserDao
 import com.closy.data.db.UserEntity
 import com.closy.data.model.User
@@ -10,10 +12,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
 class AuthRepository(
     userDao: UserDao? = null,
+    savedOutfitDao: SavedOutfitDao? = null,
+    garmentDao: ClosetGarmentDao? = null
 ) {
     private val activeUserDao: UserDao = userDao?.also {
         globalUserDao = it
@@ -21,6 +26,12 @@ class AuthRepository(
     } ?: globalUserDao ?: InMemoryUserDao().also {
         globalUserDao = it
     }
+
+    private val activeSavedOutfitDao: SavedOutfitDao? = savedOutfitDao
+        ?: globalSavedOutfitDao
+
+    private val activeGarmentDao: ClosetGarmentDao? = garmentDao
+        ?: globalGarmentDao
 
     private val _currentUser get() = _sharedCurrentUser
     val currentUser: StateFlow<User?> get() = _sharedCurrentUser.asStateFlow()
@@ -98,10 +109,12 @@ class AuthRepository(
         return Result.success(user)
     }
 
-    fun loginAsGuest(): Result<User> {
+    suspend fun loginAsGuest(): Result<User> {
+        purgeGuestData("guest@closy.com")
+        purgeGuestData("invitado@closy.app")
         val user = User(
             id = "guest_user",
-            email = "invitado@closy.app",
+            email = "guest@closy.com",
             name = "Invitado"
         )
         _currentUser.value = user
@@ -119,7 +132,7 @@ class AuthRepository(
         val currentPrefs = user?.preferences ?: UserPreferences()
         val updatedPrefs = currentPrefs.copy(genderPreference = preference)
         val updatedUser = user?.copy(preferences = updatedPrefs)
-            ?: User(id = "guest_user", email = "invitado@closy.app", name = "Invitado", preferences = updatedPrefs)
+            ?: User(id = "guest_user", email = "guest@closy.com", name = "Invitado", preferences = updatedPrefs)
         _currentUser.value = updatedUser
         return Result.success(true)
     }
@@ -139,7 +152,7 @@ class AuthRepository(
             }
         }
         val updatedUser = user?.copy(preferences = preferences)
-            ?: User(id = "guest_user", email = "invitado@closy.app", name = "Invitado", preferences = preferences)
+            ?: User(id = "guest_user", email = "guest@closy.com", name = "Invitado", preferences = preferences)
         _currentUser.value = updatedUser
         return Result.success(true)
     }
@@ -149,13 +162,35 @@ class AuthRepository(
         return !pref.isNullOrEmpty()
     }
 
+    suspend fun purgeGuestData(guestEmail: String = "guest@closy.com") {
+        val savedOutfitDao = activeSavedOutfitDao ?: globalSavedOutfitDao ?: OutfitRepository.getGlobalSavedOutfitDao()
+        savedOutfitDao?.deleteAllForUser(guestEmail)
+
+        val garmentDao = activeGarmentDao ?: globalGarmentDao ?: ClosetRepository.getGlobalGarmentDao()
+        garmentDao?.deleteAllForUser(guestEmail)
+
+        activeUserDao.deleteUserByEmail(guestEmail)
+    }
+
     fun logout() {
+        val user = _currentUser.value
+        val email = user?.email ?: currentUserEmail
+        if (email != null && (email.equals("guest@closy.com", ignoreCase = true) || email.equals("invitado@closy.app", ignoreCase = true) || user?.id == "guest_user")) {
+            runBlocking {
+                purgeGuestData("guest@closy.com")
+                purgeGuestData("invitado@closy.app")
+            }
+        }
         _currentUser.value = null
     }
 
     companion object {
         @Volatile
         private var globalUserDao: UserDao? = null
+        @Volatile
+        private var globalSavedOutfitDao: SavedOutfitDao? = null
+        @Volatile
+        private var globalGarmentDao: ClosetGarmentDao? = null
 
         private var _sharedCurrentUser = MutableStateFlow<User?>(null)
 
@@ -166,8 +201,10 @@ class AuthRepository(
         val currentUserEmail: String?
             get() = _sharedCurrentUser.value?.email
 
-        fun init(userDao: UserDao) {
+        fun init(userDao: UserDao, savedOutfitDao: SavedOutfitDao? = null, garmentDao: ClosetGarmentDao? = null) {
             globalUserDao = userDao
+            globalSavedOutfitDao = savedOutfitDao
+            globalGarmentDao = garmentDao
         }
 
         fun resetSession() {

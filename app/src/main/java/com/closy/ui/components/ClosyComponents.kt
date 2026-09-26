@@ -47,7 +47,6 @@ import androidx.compose.ui.unit.sp
 import com.closy.ui.theme.PillShape
 import com.closy.ui.theme.SegmentedTabShape
 import com.closy.ui.theme.TextFieldShape
-import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.delay
 
 /**
@@ -206,11 +205,11 @@ fun TopFloatingNotification(
     message: String?,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
-    @Suppress("UNUSED_PARAMETER") durationMillis: Long = 2000L,
+    durationMillis: Long = 2000L,
 ) {
     LaunchedEffect(message) {
         if (message != null) {
-            delay(2.seconds)
+            delay(durationMillis)
             onDismiss()
         }
     }

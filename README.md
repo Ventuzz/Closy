@@ -10,15 +10,21 @@
 [![Min SDK](https://img.shields.io/badge/Min%20SDK-24-brightgreen?style=for-the-badge)](https://developer.android.com)
 
 <p style="text-align: center;">
-  <b>Una experiencia digital elegante, intuitiva y personalizada para organizar tu guardarropa y descubrir outfits únicos inspirados en tu estilo personal.</b>
+  <b> José Antonio Vázquez Mora </b>
+  
+  <b> Miguel Adalberto Mendoza Espinoza </b>
 </p>
 
-[Visión General](#-acerca-de-closy) •
-[Capturas y Flujo](#-capturas-de-pantalla-y-flujo-de-la-aplicación) •
-[Características](#-características-principales) •
-[Stack Tecnológico](#-stack-tecnológico-y-arquitectura) •
-[Instalación](#-requisitos-del-sistema-e-instalación) •
-[Estructura](#-estructura-del-proyecto)
+<p style="text-align: center;">
+  <b>Una experiencia digital elegante, intuitiva y personalizada para organizar tu guardarropa, gestionar tu closet virtual y descubrir combinaciones y outfits únicos inspirados en tu estilo personal.</b>
+</p>
+
+[Visión General](#acerca-de-closy) •
+[Capturas y Flujo](#capturas-de-pantalla-y-flujo-de-la-aplicación) •
+[Características](#características-principales) •
+[Stack Tecnológico](#stack-tecnológico-y-arquitectura) •
+[Instalación](#requisitos-del-sistema-e-instalación) •
+[Estructura](#estructura-del-proyecto)
 
 ---
 
@@ -26,115 +32,138 @@
 
 ## Acerca de Closy
 
-**Closy** es una aplicación móvil nativa para Android diseñada para revolucionar la forma en que interactúas con tu ropa diaria. Inspirada en la estética minimalista y moderna de plataformas de inspiración como Pinterest, **Closy** ayuda a los usuarios a explorar outfits sugeridos, clasificar estilos por preferencias individuales (Hombre, Mujer, Sin género) y guardar sus conjuntos favoritos de forma completamente independiente y segura.
+**Closy** es una aplicación móvil nativa para Android diseñada para revolucionar la forma en que interactúas con tu ropa diaria. Inspirada en la estética minimalista y moderna de plataformas de inspiración como Pinterest, **Closy** ayuda a los usuarios a organizar su closet virtual, explorar outfits sugeridos, generar combinaciones inteligentes de prendas y guardar sus conjuntos favoritos de forma completamente independiente y segura.
 
 ### Visión del Proyecto
-- **Personalización Inteligente**: Adaptación continua del feed de recomendaciones según las preferencias de estilo seleccionadas por cada usuario (casual, formal, urbano, deportivo, etc.).
-- **Organización e Independencia**: Aislamiento estricto de datos entre cuentas mediante persistencia local segura con **Room Database**.
-- **Diseño Expressive & Moderno**: Paleta cálida beige (`#F8F6F0`), superficies refinadas, tipografía mixta Serif/Sans y botones con contraste equilibrado.
-- **Inspiración y Compra**: Conexión directa entre las prendas del outfit y búsquedas temáticas en **Pinterest**.
+- **Personalización Inteligente y Adaptativa**: Configuración de preferencias de estilo mediante tarjetas ampliadas e imágenes miniatura descriptivas, sincronizando el género seleccionado con los avatares y algoritmos de recomendación.
+- **Closet Virtual y Persistencia Total**: Gestión estructurada de prendas almacenadas en **Room Database** (`ClosetGarmentEntity`), con precarga automática para la cuenta de demostración (`jose@gmail.com`) y estado limpio por defecto en cuentas nuevas o de invitado.
+- **Generador Inteligente de Combinaciones**: Pestaña dedicada para generar conjuntos de ropa basados en filtros de estilo y ocasión (Casual, Urbano, Formal, Verano, Fiesta, Cita, Trabajo), indicando en tiempo real las prendas del closet que coinciden.
+- **Aislamiento de Sesión y Purga de Datos**: Autenticación persistente en Room DB con validaciones estrictas de correo (RFC), límites de longitud y sanitización, junto a una purga automática de datos de invitado al cerrar sesión (`purgeGuestData()`).
+- **Control de Perfil y Modo Oscuro**: Panel de perfil con contadores dinámicos en tiempo real ("Prendas en Closet", "Outfits Guardados"), gestión global de tema oscuro (`ThemeRepository`) e intercepción inteligente del botón de retroceso (`BackHandler`).
 
 ---
 
-## 📸 Capturas de Pantalla y Flujo de la Aplicación
+## Capturas de Pantalla y Flujo de la Aplicación
 
 A continuación se detalla el flujo principal de la aplicación con la estructura visual de sus pantallas clave y demostraciones animadas:
 
-### 🎬 Demostraciones Animadas (GIFs)
+### Demostraciones Animadas (GIFs)
 
-| 🔐 Flujo de Autenticación y Personalización | 👗 Flujo de Feed Principal y Detalle |
+| Flujo de Autenticación y Personalización | Flujo de Feed Principal y Detalle |
 | :---: | :---: |
-| <img src="docs/gifs/auth_flow.gif" width="320" alt="Flujo de Autenticación y Personalización" /><br/><sub>**Autenticación & Selección de Estilo**<br/>Conmutación de pestañas, ingreso como invitado y personalización de experiencia.</sub> | <img src="docs/gifs/home_feed_flow.gif" width="320" alt="Flujo de Feed Principal y Detalle" /><br/><sub>**Feed Interactivo & Ficha de Outfit**<br/>Filtrado dinámico por categorías y desglose de prendas en ModalBottomSheet.</sub> |
+| <img src="docs/gifs/auth_flow.gif" width="320" alt="Flujo de Autenticación y Personalización" /><br/><sub>**Autenticación & Selección de Estilo**<br/>Conmutación de pestañas, validaciones, ingreso como invitado y personalización de experiencia.</sub> | <img src="docs/gifs/home_feed_flow.gif" width="320" alt="Flujo de Feed Principal y Detalle" /><br/><sub>**Feed Interactivo & Navegación**<br/>Navegación entre pestañas, gestión de favoritos, vista del closet y detalle de prenda en ModalBottomSheet.</sub> |
 
-### 📱 Flujo de Experiencia de Usuario (Capturas Reales)
+### Flujo de Experiencia de Usuario (Capturas Reales)
 
 | 1. Autenticación | 2. Personalización de Estilo |
 | :---: | :---: |
-| <img src="docs/screenshots/01_auth_screen.png" width="300" alt="Pantalla de Autenticación" /><br/><sub>**Iniciar Sesión / Crear Cuenta**<br/>Pestañas segmentadas con soporte para inicio con Google y persistencia de sesión local.</sub> | <img src="docs/screenshots/02_personalization_screen.png" width="300" alt="Personalización de Estilo" /><br/><sub>**Personaliza tu Experiencia**<br/>Selección interactiva de género (Hombre, Mujer, Sin género) con íconos vectoriales dedicados.</sub> |
+| <img src="docs/screenshots/01_auth_screen.png" width="300" alt="Pantalla de Autenticación" /><br/><sub>**Iniciar Sesión / Crear Cuenta**<br/>Pestañas segmentadas con soporte para inicio con Google, validaciones RFC y manejo de errores.</sub> | <img src="docs/screenshots/02_personalization_screen.png" width="300" alt="Personalización de Estilo" /><br/><sub>**Personaliza tu Experiencia**<br/>Selección interactiva de preferencia de estilo (Hombre, Mujer, Sin género) con tarjetas de 120dp.</sub> |
 
-| 3. Feed de Outfits (Para Ti) | 4. Outfits Guardados & Filtros |
+| 3. Feed de Outfits (Para Ti) | 4. Pestaña Favoritos & Diálogo |
 | :---: | :---: |
-| <img src="docs/screenshots/03_home_feed.png" width="300" alt="Feed Principal de Outfits" /><br/><sub>**Recomendaciones Estilo Pinterest**<br/>Navegación tipo "Para Ti" vs "Guardados", chips de filtros por categoría y tarjetas interactivas.</sub> | <img src="docs/screenshots/04_saved_outfits.png" width="300" alt="Outfits Guardados" /><br/><sub>**Guardados Aislados por Usuario**<br/>Vista de outfits marcados como favoritos vinculados de forma exclusiva al usuario activo.</sub> |
+| <img src="docs/screenshots/03_home_feed.png" width="300" alt="Feed Principal de Outfits" /><br/><sub>**Recomendaciones Estilo Pinterest**<br/>Tarjetas estilizadas con insignias de origen, número de prendas coincidentes y chips de filtros.</sub> | <img src="docs/screenshots/04_favoritos_screen.png" width="300" alt="Favoritos y Confirmación" /><br/><sub>**Confirmación de Eliminación**<br/>Pestaña de favoritos aislada por usuario con cuadro de diálogo de confirmación para desmarcar.</sub> |
 
-| 5. Ficha de Prendas (Bottom Sheet) | 6. Notificaciones Flotantes Ovaladas |
+| 5. Closet Virtual (13 Prendas) | 6. Detalle de Prenda (Bottom Sheet) |
 | :---: | :---: |
-| <img src="docs/screenshots/05_garment_sheet.png" width="300" alt="Desglose de Prendas" /><br/><sub>**Detalle de Outfits e Integración con Pinterest**<br/>Hoja modal inferior (`ModalBottomSheet`) with desglose de ropa y botón directo a Pinterest.</sub> | <img src="docs/screenshots/06_oval_notification.png" width="300" alt="Notificación Flotante" /><br/><sub>**Top Floating Notification**<br/>Banner flotante superior en forma de píldora ovalada con desvanecimiento automático (2s).</sub> |
+| <img src="docs/screenshots/05_closet_screen.png" width="300" alt="Closet Virtual" /><br/><sub>**Gestión de Closet**<br/>Cuadrícula interactiva con 13 prendas semilla precargadas, contador dinámico y filtros por categoría.</sub> | <img src="docs/screenshots/06_garment_sheet.png" width="300" alt="Detalle de Prenda" /><br/><sub>**Ficha Modal Inferior**<br/>Hoja modal inferior (`ModalBottomSheet`) con imagen ampliada, categoría, subcategoría, color y estado.</sub> |
+
+| 7. Generador de Combinaciones | 8. Perfil de Usuario (Modo Oscuro) |
+| :---: | :---: |
+| <img src="docs/screenshots/07_generar_tab.png" width="300" alt="Generador de Outfits" /><br/><sub>**Motor de Combinaciones**<br/>Selección de múltiples etiquetas de estilo para la generación inteligente de outfits.</sub> | <img src="docs/screenshots/08_profile_screen.png" width="300" alt="Perfil de Usuario" /><br/><sub>**Panel de Perfil & Tema Oscuro**<br/>Contadores en tiempo real, selección de preferencias, conmutador de Modo Oscuro y cierre de sesión.</sub> |
+
+| 9. Notificación Flotante Ovalada | 10. Diálogo de Salida (BackHandler) |
+| :---: | :---: |
+| <img src="docs/screenshots/09_oval_notification.png" width="300" alt="Notificación Ovalada Flotante" /><br/><sub>**Top Floating Banner**<br/>Píldora flotante superior en tono oscuro con animación fluida y temporizador de 2 segundos.</sub> | <img src="docs/screenshots/10_back_dialog.png" width="300" alt="Diálogo de Salida" /><br/><sub>**Intercepción de Retroceso**<br/>Manejo mediante `BackHandler` con cuadro de diálogo de confirmación antes de salir.</sub> |
 
 > [!NOTE]
-> *Las capturas de pantalla reales están ubicadas en `docs/screenshots/` y las demostraciones animadas en `docs/gifs/`.*
+> *Todas las capturas de pantalla reales están ubicadas en `docs/screenshots/` y las demostraciones animadas en `docs/gifs/`.*
 
 ---
 
 ## Características Principales
 
-### 1. Autenticación con Persistencia Local (`Room DB`)
-- Control de sesión completo con **Iniciar Sesión** y **Crear Cuenta** a través de un control de pestañas segmentado (`SegmentedTabControl`).
-- Guardado seguro de credenciales e información de usuario en la tabla local `users` (`UserEntity`).
-- Soporte para validación de campos, simulación de login social (Google) y cierre de sesión con limpieza de estado.
+### 1. Autenticación con Persistencia y Validaciones Estrictas (`Room DB`)
+- Control de sesión completo con pestañas segmentadas (**Iniciar Sesión** y **Crear Cuenta**) respaldadas por la tabla `users` (`UserEntity`) en Room Database.
+- Validaciones estrictas de formularios: expresión regular estándar RFC para correo electrónico, límite máximo de 50 caracteres por campo, comprobación de coincidencia de contraseñas y sanitización de entrada de texto.
+- Cierre de sesión seguro con limpieza automática de datos en sesión de invitado mediante la función `purgeGuestData()`, evitando la contaminación de estado entre sesiones.
 
-### 2. Notificaciones Flotantes Ovaladas (`TopFloatingNotification`)
-- Mensajes informativos tipo banner flotante superior con forma de píldora/óvalo (`CircleShape`), fondo oscuro (`#111111`) y texto blanco.
-- Animación fluida de entrada y salida vertical con desvanecimiento (`slideInVertically` + `fadeIn`).
-- **Temporizador de desvanecimiento automático** a los **2 segundos** de inactividad para no interrumpir la navegación.
+### 2. Notificaciones Flotantes Superiores Ovaladas (`TopFloatingNotification`)
+- Componente de notificación flotante superior tipo píldora (`CircleShape`), con fondo oscuro (`#111111`) y texto en blanco para alta legibilidad.
+- Animación fluida de entrada y salida vertical combinada con desvanecimiento (`slideInVertically` + `fadeIn`).
+- **Temporizador de ocultamiento automático** configurado a **2 segundos** de inactividad para garantizar una experiencia limpia y no intrusiva.
 
-### 3. Feed Personalizado de Recomendaciones Estilo Pinterest
-- Visualización de outfits en un layout dinámico inspirado en Pinterest.
-- Cambio dinámico entre pestañas **"Para Ti"** y **"Guardados"**.
-- Filtros por categoría (Casual, Formal, Deportivo, Streetwear, Noche, etc.) actualizables en tiempo real.
-- Algoritmo de filtrado por preferencia de género seleccionada previamente por el usuario.
+### 3. Personalización Inicial de Estilo con Interfaz Enriquecida
+- Pantalla de bienvenida y configuración inicial de preferencias con tarjetas ampliadas e imágenes miniatura descriptivas.
+- Sincronización instantánea del género seleccionado con la foto de perfil del usuario y los filtros del feed de recomendaciones.
 
-### 4. Aislamiento Estricto de Datos por Usuario
-- La tabla de guardados `saved_outfits` (`SavedOutfitEntity`) utiliza una clave primaria compuesta por `(userEmail, outfitId)`.
-- Garantiza que cada usuario registrado o autenticado tenga su propia lista de outfits favoritos privada, sin mezclar datos entre diferentes cuentas en el mismo dispositivo.
+### 4. Feed de Recomendaciones "Para Ti" vs "Favoritos"
+- Transiciones animadas horizontales al conmutar entre las pestañas **"Para Ti"** y **"Favoritos"**.
+- Filtrado estricto de outfits por preferencia de género (Hombre, Mujer, Sin género) y por etiquetas de estilo.
+- Diálogo modal de confirmación al desmarcar un conjunto favorito (`"¿Eliminar outfit de favoritos?"`), protegiendo al usuario ante acciones no intencionadas.
 
-### 5. Desglose Detallado de Prendas e Integración con Pinterest
-- Al pulsar en cualquier outfit, se despliega una hoja modal inferior (`ModalBottomSheet`).
-- Muestra el listado individualizado de prendas (camisetas, pantalones, calzado, accesorios) con detalles de marca, categoría y color.
-- Incluye botón directo **"Buscar en Pinterest"** que abre la app o el navegador web con la consulta exacta del conjunto para adquirir o guardar inspiración.
+### 5. Closet Virtual Persistente (`ClosetGarmentEntity`)
+- Registro y gestión de ropa respaldados por la tabla `closet_garments` (`ClosetGarmentEntity`) en **Room DB**, asociada al email del usuario activo (`userEmail`).
+- Conjunto de ítems pre-cargados automáticamente para la cuenta de prueba `jose@gmail.com` y estado completamente vacío por defecto en cuentas nuevas e invitados.
+- Visualización de prendas mediante tarjetas limpias sin íconos flotantes distractores.
+- Formulario de registro simplificado con encabezado destacado **COLOR**, sin campos manuales de URL ni estilo, permitiendo la selección rápida mediante chips interactivos.
 
-### 6. Tema Personalizado y Diseño Adaptativo
-- Paleta cromática exclusiva basada en un fondo beige cálido (`#F8F6F0`), tarjetas blancas limpias y botones oscuros (`#111111`).
-- Tipografía refinada combinando familias Serif (títulos) y Sans-Serif (cuerpo y etiquetas).
-- Cumplimiento estricto con las directrices de **Edge-to-Edge** y **Material Design 3**.
+### 6. Pestaña "Generar Combinación" Basada en Filtros de Estilo y Ocasión
+- Herramienta inteligente para generar combinaciones de prendas a partir de etiquetas de estilo y ocasión: **Casual**, **Urbano**, **Formal**, **Verano**, **Fiesta**, **Cita** y **Trabajo**.
+- Indicador dinámico de estado en tiempo real que reporta la cantidad exacta de ropa disponible: `"X prendas de tu closet coinciden"`.
+
+### 7. Pestaña Perfil con Contadores Dinámicos y Control de Sesión
+- Panel de perfil con contadores dinámicos actualizados en tiempo real: **"Prendas en Closet"** y **"Outfits Guardados"**.
+- Imágenes de avatar de género completamente sincronizadas.
+- Botón de cierre de sesión con estilo destacado en rojo adaptado expresamente para el modo oscuro.
+- Manejo del botón físico o gestual de retroceso mediante `BackHandler` con cuadro de diálogo de confirmación (`"¿Cerrar sesión?"`).
+
+### 8. Persistencia Global de Modo Oscuro (`ThemeRepository`) e Ícono Adaptativo Centrado
+- Gestión centralizada del tema visual mediante `ThemeRepository`, conservando la preferencia de Modo Oscuro o Claro a través de los cierres de la aplicación.
+- Ícono de aplicación adaptativo centrado (`ic_closy_launcher`) optimizado para Material You y las directrices visuales de Android 13+.
+
+### 9. Suite de Pruebas Unitarias Completa (71 Pruebas con 100% de Aprobación)
+- Cobertura integral con **71 pruebas unitarias** que verifican el correcto funcionamiento de repositorios (`AuthRepository`, `ClosetRepository`, `OutfitRepository`, `ThemeRepository`) y ViewModels (`AuthViewModel`, `HomeViewModel`, `PersonalizationViewModel`).
+- 100% de tasa de aprobación en la suite de pruebas automatizadas.
 
 ---
 
 ## Stack Tecnológico y Arquitectura
 
-Closy está desarrollado siguiendo las mejores prácticas de desarrollo nativo en Android y la arquitectura recomendada por Google:
+Closy está desarrollado siguiendo la arquitectura recomendada por Google (MVVM + Clean Architecture) y las mejores prácticas nativas de Android:
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    UI Layer (Compose)                   │
-│      AuthScreen  │  PersonalizationScreen  │ HomeScreen  │
-└───────────────────────────┬─────────────────────────────┘
-                            │ StateFlow / UI Events
-┌───────────────────────────▼─────────────────────────────┐
-│                    ViewModel Layer                      │
-│   AuthViewModel  │ PersonalizationViewModel │ HomeViewModel │
-└───────────────────────────┬─────────────────────────────┘
-                            │ Coroutines
-┌───────────────────────────▼─────────────────────────────┐
-│                    Repository Layer                     │
-│          AuthRepository   │   OutfitRepository          │
-└───────────────────────────┬─────────────────────────────┘
-                            │ DAOs
-┌───────────────────────────▼─────────────────────────────┐
-│               Data Layer (Room Local DB)                │
-│    ClosyDatabase  │  UserDao  │  SavedOutfitDao         │
-└─────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────┐
+│                           UI Layer (Compose)                             │
+│  AuthScreen │ PersonalizationScreen │ HomeScreen (Feed/Closet/Gen/Perfil)  │
+└────────────────────────────────────┬─────────────────────────────────────┘
+                                     │ StateFlow / UI Events
+┌────────────────────────────────────▼─────────────────────────────────────┐
+│                            ViewModel Layer                               │
+│      AuthViewModel │ PersonalizationViewModel │ HomeViewModel                │
+└────────────────────────────────────┬─────────────────────────────────────┘
+                                     │ Coroutines / StateFlow
+┌────────────────────────────────────▼─────────────────────────────────────┐
+│                            Repository Layer                              │
+│ AuthRepository │ OutfitRepository │ ClosetRepository │ ThemeRepository   │
+└────────────────────────────────────┬─────────────────────────────────────┘
+                                     │ DAOs
+┌────────────────────────────────────▼─────────────────────────────────────┐
+│                      Data Layer (Room Local DB)                          │
+│ ClosyDatabase │ UserDao │ SavedOutfitDao │ ClosetGarmentDao │ ClosetItemDao │
+└──────────────────────────────────────────────────────────────────────────┘
 ```
 
 | Componente | Tecnología / Librería | Descripción |
 | :--- | :--- | :--- |
-| **Lenguaje** | [Kotlin 2.x](https://kotlinlang.org) | Lenguaje moderno, conciso y seguro para desarrollo Android. |
-| **Interfaz de Usuario** | [Jetpack Compose](https://developer.android.com/jetpack/compose) + [Material 3](https://m3.material.io) | UI declarativa nativa con componentes expresivos M3. |
+| **Lenguaje** | [Kotlin 2.x](https://kotlinlang.org) | Lenguaje moderno y conciso para desarrollo nativo en Android. |
+| **Interfaz de Usuario** | [Jetpack Compose](https://developer.android.com/jetpack/compose) + [Material 3](https://m3.material.io) | UI declarativa nativa con componentes expresivos M3 y soporte Edge-to-Edge. |
 | **Navegación** | [androidx.navigation3](https://developer.android.com/guide/navigation) | Navegación basada en estados con `NavDisplay` y `@Serializable NavKey`. |
-| **Arquitectura** | MVVM + Clean Architecture | Separación clara de responsabilidades entre UI, lógica y datos. |
-| **Persistencia Local** | [Room DB](https://developer.android.com/training/data-storage/room) | Base de datos SQLite reactiva con entidades `UserEntity` y `SavedOutfitEntity`. |
-| **Asincronía** | Kotlin Coroutines & `StateFlow` | Manejo de hilos en segundo plano y emisión reactiva de estados UI. |
-| **Carga de Imágenes** | [Coil](https://coil-kt.github.io/coil/) (`coil-compose`) | Carga eficiente e interactiva de imágenes remotas y locales. |
-| **Procesador de Anotaciones** | Google KSP | Procesamiento de anotaciones ultrarrápido para Room y Moshi. |
+| **Arquitectura** | MVVM + Clean Architecture | Separación clara de responsabilidades entre UI, lógica de negocio y capas de datos. |
+| **Persistencia Local** | [Room DB](https://developer.android.com/training/data-storage/room) | Base de datos SQLite reactiva con entidades `UserEntity`, `SavedOutfitEntity` y `ClosetGarmentEntity`. |
+| **Gestión de Tema** | `ThemeRepository` | Repositorio dedicado a la persistencia del estado de tema claro/oscuro. |
+| **Asincronía** | Kotlin Coroutines & `StateFlow` | Manejo eficiente de tareas en segundo plano y emisión reactiva de estado UI. |
+| **Carga de Imágenes** | [Coil](https://coil-kt.github.io/coil/) (`coil-compose`) | Carga asíncrona de imágenes locales y recursos remotos. |
+| **Procesador de Anotaciones** | Google KSP | Procesamiento de anotaciones en tiempo de compilación para Room. |
 
 ---
 
@@ -156,7 +185,7 @@ Closy está desarrollado siguiendo las mejores prácticas de desarrollo nativo e
    ```
 
 2. **Abrir en Android Studio**:
-   Abre Android Studio y selecciona **Open**, luego navega hasta la carpeta clonada del proyecto.
+   Abre Android Studio y selecciona **Open**, luego navega hasta la carpeta del proyecto.
 
 3. **Compilar el proyecto**:
    Puedes compilar el proyecto ejecutando el siguiente comando Gradle en la terminal:
@@ -165,13 +194,13 @@ Closy está desarrollado siguiendo las mejores prácticas de desarrollo nativo e
    ```
 
 4. **Ejecutar Pruebas Unitarias**:
-   Para verificar las pruebas unitarias del proyecto:
+   Para ejecutar las 71 pruebas unitarias del proyecto y verificar el 100% de aprobación:
    ```bash
    ./gradlew testDebugUnitTest
    ```
 
 5. **Desplegar en Emulador o Dispositivo Físico**:
-   Conecta un dispositivo con Depuración USB habilitada (o inicia un AVD) y presiona **Run** (`Shift + F10`).
+   Conecta un dispositivo con Depuración USB habilitada (o inicia un emulador AVD) y presiona **Run** (`Shift + F10`).
 
 ---
 
@@ -186,32 +215,30 @@ closy/
 │   │   ├── main/
 │   │   │   ├── java/com/closy/
 │   │   │   │   ├── ClosyApplication.kt          # Clase de aplicación principal
-│   │   │   │   ├── MainActivity.kt              # Activity principal con Edge-to-Edge
+│   │   │   │   ├── MainActivity.kt              # Activity principal con Edge-to-Edge y BackHandler
 │   │   │   │   ├── data/                        # Capa de datos
 │   │   │   │   │   ├── db/                      # Base de datos Room
-│   │   │   │   │   │   ├── ClosyDatabase.kt     # Definición de la BD SQLite
+│   │   │   │   │   │   ├── ClosyDatabase.kt     # Definición de la BD SQLite y migraciones
 │   │   │   │   │   │   ├── UserEntity.kt        # Tabla de usuarios
 │   │   │   │   │   │   ├── UserDao.kt           # DAO de usuarios
 │   │   │   │   │   │   ├── SavedOutfitEntity.kt # Tabla de outfits guardados por usuario
-│   │   │   │   │   │   └── SavedOutfitDao.kt    # DAO de outfits guardados
-│   │   │   │   │   ├── model/                   # Modelos de dominio (Outfit, GarmentItem, User)
-│   │   │   │   │   └── repository/              # Repositorios (AuthRepository, OutfitRepository)
+│   │   │   │   │   │   ├── SavedOutfitDao.kt    # DAO de outfits guardados
+│   │   │   │   │   │   ├── ClosetGarmentEntity.kt # Tabla de prendas del closet virtual
+│   │   │   │   │   │   ├── ClosetGarmentDao.kt  # DAO de prendas del closet virtual
+│   │   │   │   │   │   ├── ClosetItemEntity.kt  # Tabla legacy de items del closet
+│   │   │   │   │   │   └── ClosetItemDao.kt     # DAO legacy de items del closet
+│   │   │   │   │   ├── model/                   # Modelos de dominio (Outfit, GarmentItem, User, UserPreferences)
+│   │   │   │   │   └── repository/              # Repositorios (AuthRepository, OutfitRepository, ClosetRepository, ThemeRepository)
 │   │   │   │   ├── navigation/                  # Navegación con Navigation 3
 │   │   │   │   │   └── AppNavigation.kt         # Rutas NavKey y NavDisplay
 │   │   │   │   └── ui/                          # Capa de presentación (Jetpack Compose)
-│   │   │   │       ├── auth/                    # Pantalla de Login y Registro
-│   │   │   │       │   ├── AuthScreen.kt
-│   │   │   │       │   └── AuthViewModel.kt
-│   │   │   │       ├── personalization/         # Selección de preferencias de estilo
-│   │   │   │       │   ├── PersonalizationScreen.kt
-│   │   │   │       │   └── PersonalizationViewModel.kt
-│   │   │   │       ├── home/                    # Feed principal de outfits y guardados
-│   │   │   │       │   ├── HomeScreen.kt
-│   │   │   │       │   └── HomeViewModel.kt
-│   │   │   │       ├── components/              # Componentes UI reutilizables (Notificación Ovalada, Píldoras, etc.)
+│   │   │   │       ├── auth/                    # Pantalla de Login y Registro (AuthScreen, AuthViewModel)
+│   │   │   │       ├── personalization/         # Selección de preferencias (PersonalizationScreen, PersonalizationViewModel)
+│   │   │   │       ├── home/                    # Pantalla principal (HomeScreen, HomeViewModel)
+│   │   │   │       ├── components/              # Componentes UI reutilizables (Notificación Ovalada, Chips, Tarjetas)
 │   │   │   │       └── theme/                   # Sistema de diseño (Color.kt, Type.kt, Theme.kt, Shape.kt)
-│   │   │   └── res/                             # Recursos (Drawables, Mipmaps, Values, Vector Assets)
-│   │   └── test/                                # Pruebas unitarias de repositorios y ViewModels
+│   │   │   └── res/                             # Recursos (ic_closy_launcher, Drawables, Mipmaps, Values)
+│   │   └── test/                                # 71 Pruebas unitarias de repositorios y ViewModels
 │   └── build.gradle.kts
 ├── build.gradle.kts
 ├── gradle/
@@ -223,6 +250,6 @@ closy/
 
 <div style="text-align: center;">
 
-Desarrollado con ❤️ usando **Kotlin** y **Jetpack Compose**.
+Desarrollado usando **Kotlin** y **Jetpack Compose**.
 
 </div>

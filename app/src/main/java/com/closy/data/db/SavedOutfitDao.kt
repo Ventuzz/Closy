@@ -18,4 +18,7 @@ interface SavedOutfitDao {
 
     @Query("SELECT EXISTS(SELECT 1 FROM saved_outfits WHERE userEmail = :userEmail AND outfitId = :outfitId)")
     suspend fun isOutfitSaved(userEmail: String, outfitId: String): Boolean
+
+    @Query("DELETE FROM saved_outfits WHERE LOWER(userEmail) = LOWER(:userEmail)")
+    suspend fun deleteAllForUser(userEmail: String)
 }

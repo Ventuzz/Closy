@@ -1,6 +1,10 @@
 package com.closy
 
+import com.closy.data.db.ClosetGarmentEntity
+import com.closy.data.db.InMemoryClosetGarmentDao
+import com.closy.data.db.InMemorySavedOutfitDao
 import com.closy.data.db.InMemoryUserDao
+import com.closy.data.db.SavedOutfitEntity
 import com.closy.data.repository.AuthRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -11,6 +15,7 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -19,13 +24,18 @@ import org.junit.Test
 class AuthRepositoryTest {
 
     private val testDispatcher = StandardTestDispatcher()
+    private lateinit var userDao: InMemoryUserDao
+    private lateinit var savedOutfitDao: InMemorySavedOutfitDao
+    private lateinit var garmentDao: InMemoryClosetGarmentDao
     private lateinit var repository: AuthRepository
 
     @Before
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
-        val userDao = InMemoryUserDao()
-        repository = AuthRepository(userDao)
+        userDao = InMemoryUserDao()
+        savedOutfitDao = InMemorySavedOutfitDao()
+        garmentDao = InMemoryClosetGarmentDao()
+        repository = AuthRepository(userDao, savedOutfitDao, garmentDao)
     }
 
     @After
@@ -102,7 +112,7 @@ class AuthRepositoryTest {
         val user = result.getOrNull()
         assertNotNull(user)
         assertEquals("Invitado", user?.name)
-        assertEquals("invitado@closy.app", user?.email)
+        assertEquals("guest@closy.com", user?.email)
         assertEquals("guest_user", user?.id)
         assertEquals(user, repository.currentUser.value)
     }
@@ -117,5 +127,25 @@ class AuthRepositoryTest {
         val currentUser = repository.currentUser.value
         assertNotNull(currentUser)
         assertEquals("Mujer", currentUser?.preferences?.genderPreference)
+    }
+
+    @Test
+    fun testAutomaticGuestDataPurgeOnLogout() = runTest {
+        repository.loginAsGuest()
+        val guestEmail = "guest@closy.com"
+
+        savedOutfitDao.saveOutfit(SavedOutfitEntity(guestEmail, "outfit_guest_1"))
+        garmentDao.insertGarment(
+            ClosetGarmentEntity("g1", guestEmail, "Camiseta", "Tops", "#FFFFFF", "", "Casual")
+        )
+
+        assertTrue(savedOutfitDao.getSavedOutfitIdsForUser(guestEmail).isNotEmpty())
+        assertTrue(garmentDao.getGarmentCountForUser(guestEmail) > 0)
+
+        repository.logout()
+
+        assertNull(repository.currentUser.value)
+        assertTrue(savedOutfitDao.getSavedOutfitIdsForUser(guestEmail).isEmpty())
+        assertEquals(0, garmentDao.getGarmentCountForUser(guestEmail))
     }
 }
