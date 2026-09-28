@@ -120,12 +120,16 @@ A continuación se detalla el flujo principal de la aplicación con la estructur
 - Gestión centralizada del tema visual mediante `ThemeRepository`, conservando la preferencia de Modo Oscuro o Claro a través de los cierres de la aplicación.
 
 
-### 9. Pruebas Unitarias Completa (71 Pruebas con 100% de Aprobación)
+### 9. Pruebas Unitarias
 - Cobertura integral con **71 pruebas unitarias** que verifican el correcto funcionamiento de repositorios (`AuthRepository`, `ClosetRepository`, `OutfitRepository`, `ThemeRepository`) y ViewModels (`AuthViewModel`, `HomeViewModel`, `PersonalizationViewModel`).
 - 100% de tasa de aprobación en la suite de pruebas automatizadas.
 
 ---
+## Diagrama Entidad Relación
+<img width="1024" height="559" alt="image" src="https://github.com/user-attachments/assets/c4a38480-fa0e-488d-bef3-14867e99b574" />
 
+
+---
 ## Stack Tecnológico y Arquitectura
 
 Closy está desarrollado siguiendo la arquitectura recomendada por Google (MVVM + Clean Architecture) y las mejores prácticas nativas de Android:
