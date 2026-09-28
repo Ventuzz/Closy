@@ -36,7 +36,7 @@
 
 ### Visión del Proyecto
 - **Personalización Inteligente y Adaptativa**: Configuración de preferencias de estilo mediante tarjetas ampliadas e imágenes miniatura descriptivas, sincronizando el género seleccionado con los avatares y algoritmos de recomendación.
-- **Closet Virtual y Persistencia Total**: Gestión estructurada de prendas almacenadas en **Room Database** (`ClosetGarmentEntity`), con precarga automática para la cuenta de demostración (`jose@gmail.com`) y estado limpio por defecto en cuentas nuevas o de invitado.
+- **Closet Virtual y Persistencia Total**: Gestión estructurada de prendas almacenadas en **Room Database** (`ClosetGarmentEntity`), esto para poder brindar una experiencia más inmersiva a los usuarios que utilicen la aplicación. 
 - **Generador Inteligente de Combinaciones**: Pestaña dedicada para generar conjuntos de ropa basados en filtros de estilo y ocasión (Casual, Urbano, Formal, Verano, Fiesta, Cita, Trabajo), indicando en tiempo real las prendas del closet que coinciden.
 - **Aislamiento de Sesión y Purga de Datos**: Autenticación persistente en Room DB con validaciones estrictas de correo (RFC), límites de longitud y sanitización, junto a una purga automática de datos de invitado al cerrar sesión (`purgeGuestData()`).
 - **Control de Perfil y Modo Oscuro**: Panel de perfil con contadores dinámicos en tiempo real ("Prendas en Closet", "Outfits Guardados"), gestión global de tema oscuro (`ThemeRepository`) e intercepción inteligente del botón de retroceso (`BackHandler`).
@@ -49,7 +49,7 @@ A continuación se detalla el flujo principal de la aplicación con la estructur
 
 ### Demostraciones Animadas (GIFs)
 
-| Flujo de Autenticación y Personalización | Flujo de Feed Principal y Detalle |
+| Flujo de Autenticación | Flujo de Feed Principal y Detalle |
 | :---: | :---: |
 | <img src="docs/gifs/auth_flow.gif" width="320" alt="Flujo de Autenticación y Personalización" /><br/><sub>**Autenticación & Selección de Estilo**<br/>Conmutación de pestañas, validaciones, ingreso como invitado y personalización de experiencia.</sub> | <img src="docs/gifs/home_feed_flow.gif" width="320" alt="Flujo de Feed Principal y Detalle" /><br/><sub>**Feed Interactivo & Navegación**<br/>Navegación entre pestañas, gestión de favoritos, vista del closet y detalle de prenda en ModalBottomSheet.</sub> |
 
@@ -87,25 +87,24 @@ A continuación se detalla el flujo principal de la aplicación con la estructur
 - Validaciones estrictas de formularios: expresión regular estándar RFC para correo electrónico, límite máximo de 50 caracteres por campo, comprobación de coincidencia de contraseñas y sanitización de entrada de texto.
 - Cierre de sesión seguro con limpieza automática de datos en sesión de invitado mediante la función `purgeGuestData()`, evitando la contaminación de estado entre sesiones.
 
-### 2. Notificaciones Flotantes Superiores Ovaladas (`TopFloatingNotification`)
+### 2. Notificaciones Flotantes (`TopFloatingNotification`)
 - Componente de notificación flotante superior tipo píldora (`CircleShape`), con fondo oscuro (`#111111`) y texto en blanco para alta legibilidad.
 - Animación fluida de entrada y salida vertical combinada con desvanecimiento (`slideInVertically` + `fadeIn`).
 - **Temporizador de ocultamiento automático** configurado a **2 segundos** de inactividad para garantizar una experiencia limpia y no intrusiva.
 
-### 3. Personalización Inicial de Estilo con Interfaz Enriquecida
-- Pantalla de bienvenida y configuración inicial de preferencias con tarjetas ampliadas e imágenes miniatura descriptivas.
+### 3. Personalización Inicial de Estilo
+- Pantalla de bienvenida y configuración inicial de preferencias con tarjetas e imágenes miniatura descriptivas.
 - Sincronización instantánea del género seleccionado con la foto de perfil del usuario y los filtros del feed de recomendaciones.
 
 ### 4. Feed de Recomendaciones "Para Ti" vs "Favoritos"
-- Transiciones animadas horizontales al conmutar entre las pestañas **"Para Ti"** y **"Favoritos"**.
+- pestañas de **"Para Ti"** y **"Favoritos"** para brindar un feed mucho más amigable al momento de entrar en la aplicación, permitiendo gestionar recomendaciones.
 - Filtrado estricto de outfits por preferencia de género (Hombre, Mujer, Sin género) y por etiquetas de estilo.
-- Diálogo modal de confirmación al desmarcar un conjunto favorito (`"¿Eliminar outfit de favoritos?"`), protegiendo al usuario ante acciones no intencionadas.
+- Diálogo modal de confirmación al eliminar un conjunto favorito (`"¿Eliminar outfit de favoritos?"`), protegiendo al usuario ante acciones no intencionadas.
 
-### 5. Closet Virtual Persistente (`ClosetGarmentEntity`)
+### 5. Closet Virtual (`ClosetGarmentEntity`)
 - Registro y gestión de ropa respaldados por la tabla `closet_garments` (`ClosetGarmentEntity`) en **Room DB**, asociada al email del usuario activo (`userEmail`).
-- Conjunto de ítems pre-cargados automáticamente para la cuenta de prueba `jose@gmail.com` y estado completamente vacío por defecto en cuentas nuevas e invitados.
-- Visualización de prendas mediante tarjetas limpias sin íconos flotantes distractores.
-- Formulario de registro simplificado con encabezado destacado **COLOR**, sin campos manuales de URL ni estilo, permitiendo la selección rápida mediante chips interactivos.
+- Visualización de prendas mediante tarjetas limpias.
+- Formulario de registro simplificado para permitir la selección rápida de caracteristicas de las prendas mediante chips interactivos.
 
 ### 6. Pestaña "Generar Combinación" Basada en Filtros de Estilo y Ocasión
 - Herramienta inteligente para generar combinaciones de prendas a partir de etiquetas de estilo y ocasión: **Casual**, **Urbano**, **Formal**, **Verano**, **Fiesta**, **Cita** y **Trabajo**.
@@ -114,14 +113,14 @@ A continuación se detalla el flujo principal de la aplicación con la estructur
 ### 7. Pestaña Perfil con Contadores Dinámicos y Control de Sesión
 - Panel de perfil con contadores dinámicos actualizados en tiempo real: **"Prendas en Closet"** y **"Outfits Guardados"**.
 - Imágenes de avatar de género completamente sincronizadas.
-- Botón de cierre de sesión con estilo destacado en rojo adaptado expresamente para el modo oscuro.
-- Manejo del botón físico o gestual de retroceso mediante `BackHandler` con cuadro de diálogo de confirmación (`"¿Cerrar sesión?"`).
+- Botón de cierre de sesión con estilo destacado en rojo para mayor visibilidad.
+- Manejo del botón físico o gestual de retroceso mediante `BackHandler` con cuadro de diálogo de confirmación para el cierre de sesión.
 
-### 8. Persistencia Global de Modo Oscuro (`ThemeRepository`) e Ícono Adaptativo Centrado
+### 8. Modo Oscuro
 - Gestión centralizada del tema visual mediante `ThemeRepository`, conservando la preferencia de Modo Oscuro o Claro a través de los cierres de la aplicación.
-- Ícono de aplicación adaptativo centrado (`ic_closy_launcher`) optimizado para Material You y las directrices visuales de Android 13+.
 
-### 9. Suite de Pruebas Unitarias Completa (71 Pruebas con 100% de Aprobación)
+
+### 9. Pruebas Unitarias Completa (71 Pruebas con 100% de Aprobación)
 - Cobertura integral con **71 pruebas unitarias** que verifican el correcto funcionamiento de repositorios (`AuthRepository`, `ClosetRepository`, `OutfitRepository`, `ThemeRepository`) y ViewModels (`AuthViewModel`, `HomeViewModel`, `PersonalizationViewModel`).
 - 100% de tasa de aprobación en la suite de pruebas automatizadas.
 
@@ -132,25 +131,25 @@ A continuación se detalla el flujo principal de la aplicación con la estructur
 Closy está desarrollado siguiendo la arquitectura recomendada por Google (MVVM + Clean Architecture) y las mejores prácticas nativas de Android:
 
 ```
-┌──────────────────────────────────────────────────────────────────────────┐
-│                           UI Layer (Compose)                             │
+┌────────────────────────────────────────────────────────────────────────────┐
+│                           UI Layer (Compose)                               │
 │  AuthScreen │ PersonalizationScreen │ HomeScreen (Feed/Closet/Gen/Perfil)  │
-└────────────────────────────────────┬─────────────────────────────────────┘
+└────────────────────────────────────┬───────────────────────────────────────┘
                                      │ StateFlow / UI Events
-┌────────────────────────────────────▼─────────────────────────────────────┐
-│                            ViewModel Layer                               │
-│      AuthViewModel │ PersonalizationViewModel │ HomeViewModel                │
-└────────────────────────────────────┬─────────────────────────────────────┘
+┌────────────────────────────────────▼───────────────────────────────────────┐
+│                            ViewModel Layer                                 │
+│      AuthViewModel │ PersonalizationViewModel │ HomeViewModel              │
+└────────────────────────────────────┬───────────────────────────────────────┘
                                      │ Coroutines / StateFlow
 ┌────────────────────────────────────▼─────────────────────────────────────┐
 │                            Repository Layer                              │
 │ AuthRepository │ OutfitRepository │ ClosetRepository │ ThemeRepository   │
 └────────────────────────────────────┬─────────────────────────────────────┘
                                      │ DAOs
-┌────────────────────────────────────▼─────────────────────────────────────┐
-│                      Data Layer (Room Local DB)                          │
+┌────────────────────────────────────▼────────────────────────────────────────┐
+│                      Data Layer (Room Local DB)                             │
 │ ClosyDatabase │ UserDao │ SavedOutfitDao │ ClosetGarmentDao │ ClosetItemDao │
-└──────────────────────────────────────────────────────────────────────────┘
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 | Componente | Tecnología / Librería | Descripción |
